@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Camera.h"
 
-CPoint3D CCamera::CameraTransform(CPoint3D& f3World)
+CPoint3D CCamera::CameraTransform(const CPoint3D& f3World)
 {
 	// Move Camera to origin of world space
 	CPoint3D f3Camera = f3World;
@@ -9,9 +9,9 @@ CPoint3D CCamera::CameraTransform(CPoint3D& f3World)
 	f3Camera.y -= m_fyPosition;
 	f3Camera.z -= m_fzPosition;
 
-	float fPitch = DegreeToRadian(-m_fxPosition);
-	float fYaw = DegreeToRadian(-m_fyPosition);
-	float fRoll = DegreeToRadian(-m_fzPosition);
+	float fPitch = DegreeToRadian(-m_fxRotation);
+	float fYaw = DegreeToRadian(-m_fyRotation);
+	float fRoll = DegreeToRadian(-m_fzRotation);
 
 	// Rotate camera to match world space's basis
 	CPoint3D f3Rotated = f3Camera;
@@ -26,7 +26,7 @@ CPoint3D CCamera::CameraTransform(CPoint3D& f3World)
 	if (fYaw != 0.0f)
 	{
 		f3Rotated.x = float((f3Camera.x * cos(fYaw)) + (f3Camera.y * sin(fYaw)));
-		f3Rotated.z = float(-(f3Camera.x * cos(fYaw)) + (f3Camera.y * sin(fYaw)));
+		f3Rotated.z = float(-(f3Camera.x * sin(fYaw)) + (f3Camera.y * cos(fYaw)));
 		f3Camera.x = f3Rotated.x;
 		f3Camera.z = f3Rotated.z;
 	}
@@ -43,7 +43,7 @@ CPoint3D CCamera::CameraTransform(CPoint3D& f3World)
 	return f3Camera;
 }
 
-CPoint3D CCamera::ProjectionTranform(CPoint3D& f3Camera)
+CPoint3D CCamera::ProjectionTranform(const CPoint3D& f3Camera)
 {
 	CPoint3D f3Project = f3Camera;
 	if (f3Camera.z != 0.0f)
@@ -59,13 +59,13 @@ CPoint3D CCamera::ProjectionTranform(CPoint3D& f3Camera)
 	return f3Project;
 }
 
-CPoint3D CCamera::ScreenTransform(CPoint3D& f3Projection)
+CPoint3D CCamera::ScreenTransform(const CPoint3D& f3Projection)
 {
 	CPoint3D f3Screen = f3Projection;
 
 	float fHalfWidth = m_pViewport->m_nWidth * 0.5f;
 	float fHalfHeight = m_pViewport->m_nHeight * 0.5f;
-	f3Screen.x = (f3Projection.x * fHalfWidth) + m_pViewport->m_nLeft + fHalfHeight;
+	f3Screen.x = (f3Projection.x * fHalfWidth) + m_pViewport->m_nLeft + fHalfWidth;
 	f3Screen.y = (-f3Projection.y * fHalfWidth) + m_pViewport->m_nTop + fHalfHeight;
 
 	return f3Screen;

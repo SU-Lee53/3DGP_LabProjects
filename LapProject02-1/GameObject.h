@@ -52,13 +52,6 @@ public:
 		m_fzRotation = z;
 	}
 	
-	void SetPosition(float x, float y, float z)
-	{
-		m_fxPosition = x;
-		m_fyPosition = y;
-		m_fzPosition = z;
-	}
-
 	void SetRotationSpeed(float x, float y, float z)
 	{
 		m_fxRotationSpeed = x;
@@ -83,7 +76,7 @@ public:
 	}
 
 	// Transfrom one vertex of mesh using GameObject's world position and rotation
-	CPoint3D WorldTransform(CPoint3D& f3Model);
+	CPoint3D WorldTransform(const CPoint3D& f3Model);
 	
 	// Animate GameObject
 	virtual void Animate(float fElapsedTime);

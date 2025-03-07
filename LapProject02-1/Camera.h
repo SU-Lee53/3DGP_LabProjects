@@ -46,9 +46,9 @@ private:
 
 public:
 	// Compute View, Projection, Screen, Transform
-	CPoint3D CameraTransform(CPoint3D& f3World);
-	CPoint3D ProjectionTranform(CPoint3D& f3Camera);
-	CPoint3D ScreenTransform(CPoint3D& f3Projection);
+	CPoint3D CameraTransform(const CPoint3D& f3World);
+	CPoint3D ProjectionTranform(const CPoint3D& f3Camera);
+	CPoint3D ScreenTransform(const CPoint3D& f3Projection);
 
 	void SetPosition(float x, float y, float z)
 	{

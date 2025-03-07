@@ -13,7 +13,7 @@ CPoint3D CGraphicsPipeline::ScreenTransform(CPoint3D& f3Projection)
 CPoint3D CGraphicsPipeline::Project(CPoint3D& f3Model)
 {
 	CPoint3D f3World = m_pGameObject->WorldTransform(f3Model);
-	CPoint3D f3Camera = m_pCamera->CameraTransform(f3Model);
+	CPoint3D f3Camera = m_pCamera->CameraTransform(f3World);
 	CPoint3D f3Projecetion = m_pCamera->ProjectionTranform(f3Camera);
 
 	return f3Projecetion;

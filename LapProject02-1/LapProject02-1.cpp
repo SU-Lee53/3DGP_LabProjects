@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "LapProject02-1.h"
+#include "GameFramework.h"
 
 #define MAX_LOADSTRING 100
 
@@ -16,6 +17,10 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+// Declare GameFramework in global
+CGameFramework gGameFramework;
+
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -43,14 +48,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg;
 
     // 기본 메시지 루프입니다:
-    while (GetMessage(&msg, nullptr, 0, 0))
+    while (TRUE)
     {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
+                if (msg.message == WM_QUIT) break;
+
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+        else
+        {
+            gGameFramework.FrameAdvance();
         }
     }
+
+    gGameFramework.OnDestroy();
 
     return (int) msg.wParam;
 }
@@ -76,7 +92,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_LAPPROJECT021));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_LAPPROJECT021);
+    //wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_LAPPROJECT021);
+    wcex.lpszMenuName   = NULL; // Remove menu
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -101,9 +118,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     RECT rc = { 0,0, 640, 480 };
     AdjustWindowRect(&rc, dwStyle, FALSE);
 
-    HWND hWnd = CreateWindow(szWindowClass, szTitle, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance, NULL);
+    HWND hWnd = CreateWindow(szWindowClass, szTitle, dwStyle, 
+        CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance, NULL);
 
     if (!hWnd) return FALSE;
+
+    gGameFramework.OnCreate(hInstance, hWnd);
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);

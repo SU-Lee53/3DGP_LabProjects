@@ -92,18 +92,18 @@ void CMesh::Render(HDC hDCFrameBuffer)
 				(bCurrentInside || bPreviousInside))
 			{
 				::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3CurrentProject);
-				f3PreviousProject = f3CurrentProject;
-				bPreviousInside = bCurrentInside;
 			}
 
-			// Draw last and first vertices of polygon with line
-			if (((f3PreviousProject.z >= 0.0f) || (f3InitialProject.z >= 0.0f)) &&
-				(bInitialInside || bPreviousInside))
-			{
-				::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3InitialProject);
-			}
+			f3PreviousProject = f3CurrentProject;
+			bPreviousInside = bCurrentInside;
 		}
 
+		// Draw last and first vertices of polygon with line
+		if (((f3PreviousProject.z >= 0.0f) || (f3InitialProject.z >= 0.0f)) &&
+			(bInitialInside || bPreviousInside))
+		{
+			::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3InitialProject);
+		}
 	}
 }
 

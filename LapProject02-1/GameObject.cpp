@@ -6,10 +6,10 @@ CGameObject::~CGameObject()
 	if (m_pMesh) m_pMesh->Release();
 }
 
-CPoint3D CGameObject::WorldTransform(CPoint3D& f3Model)
+CPoint3D CGameObject::WorldTransform(const CPoint3D& f3Model)
 {
 	float fPitch = DegreeToRadian(m_fxRotation);
-	float fYaw = DegreeToRadian(m_fxRotation);
+	float fYaw = DegreeToRadian(m_fyRotation);
 	float fRoll = DegreeToRadian(m_fzRotation);
 
 	CPoint3D f3World = f3Model;
@@ -34,8 +34,8 @@ CPoint3D CGameObject::WorldTransform(CPoint3D& f3Model)
 
 	if (fRoll != 0.0f)
 	{
-		f3Rotated.x = float((f3World.x * sin(fRoll)) + (f3World.y * cos(fRoll)));
-		f3Rotated.y = float((f3World.x * cos(fRoll)) - (f3World.y * sin(fRoll)));
+		f3Rotated.x = float((f3World.x * cos(fRoll)) - (f3World.y * sin(fRoll)));
+		f3Rotated.y = float((f3World.x * sin(fRoll)) + (f3World.y * cos(fRoll)));
 		f3World.x = f3Rotated.x;
 		f3World.y = f3Rotated.y;
 	}
@@ -49,7 +49,7 @@ CPoint3D CGameObject::WorldTransform(CPoint3D& f3Model)
 
 void CGameObject::Animate(float fElapsedTime)
 {
-	Rotate(m_fxRotationSpeed * fElapsedTime, m_fyRotationSpeed * fElapsedTime, m_fzRotation * fElapsedTime);
+	Rotate(m_fxRotationSpeed * fElapsedTime, m_fyRotationSpeed * fElapsedTime, m_fzRotationSpeed * fElapsedTime);
 }
 
 void CGameObject::Render(HDC hDCFrameBuffer)
