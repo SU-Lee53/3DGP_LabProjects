@@ -15,13 +15,15 @@ using namespace DirectX::PackedVector;
 #include <print>
 #include <typeinfo>
 
-// 1. Basics of DirectXMath
-void XMBasicsTest()
-{
+#include "Utils.h"
+using namespace std::literals;
 
+// 1. Basics of DirectXMath
+void XMBasics()
+{
 	// 1. Constants(radian)
 	// DirectXMath provides some constants like radian : more in DirectXMath.h 
-	std::println("Constants(radian)");
+	std::println("1. Constants(radian)");
 	std::println("XM_PI (¥ð) : {}", XM_PI);
 	std::println("XM_2PI (2¥ð) : {}", XM_2PI);
 	std::println("XM_1DIVPI (1/¥ð) : {}", XM_1DIVPI);
@@ -453,6 +455,283 @@ void XMBasicsTest()
 
 }
 
+void XM3DGraphicsFundametals()
+{
+	// 1. trigonometric functions
+	{
+		std::println("1. trigonometric functions");
+		// DirectXMath provides trigonometric functions using radian values. <- CAUTION!!! NOT DEGREE
+		// Postfix ...Est functions like XMScalarCosEst() will returns an approximate value. This will be more faster in case of value is OK with less pricision.
+		
+		float pi = XM_PIDIV2;
+		std::println("XMScalarSin(XM_PIDIV2) : {}", XMScalarSin(XM_PIDIV2));		// XMScalarSin(XM_PIDIV2) : 0.9999999
+		std::println("XMScalarCos(XM_PIDIV2) : {}", XMScalarCos(XM_PIDIV2));		// XMScalarCos(XM_PIDIV2) : -1.1920929e-07
+		std::println("XMScalarSinEst(XM_PIDIV2) : {}", XMScalarSinEst(XM_PIDIV2));	// XMScalarSinEst(XM_PIDIV2) : 0.9999999
+		std::println("XMScalarCosEst(XM_PIDIV2) : {}", XMScalarCosEst(XM_PIDIV2));	// XMScalarCosEst(XM_PIDIV2) : -1.1920929e-07
+
+		// float XMScalarModAngle(float value) will return value % 2PI -> this will return value between [-PI, PI].
+		std::println("XMScalarModAngle(XM_PIDIV2 * 10) : {}", XMScalarModAngle(XM_PIDIV2 * 10));	// XMScalarModAngle(XM_PIDIV2 * 10) : -3.1415927
+
+		// bool XMScalarNearEqual(float v1, float v2, float epsilon) will return true if v1 == v2.
+		// Because of floating point problems, |v1 - v2| <= epsilon is used to compare
+		std::println("XMScalarNearEqual(XM_PI, XM_PIDIV2 * 2, FLT_EPSILON) : {}", XMScalarNearEqual(XM_PI, XM_PIDIV2 * 2, FLT_EPSILON));	// XMScalarNearEqual(XM_PI, XM_PIDIV2 * 2, FLT_EPSILON) : true
+
+		// There are trigonometric functions for XMVECTORs.
+		// For example) XMVectorCos() will return { cos(x), cos(y), cos(z), cos(w) }.
+
+		XMVECTOR v = XMVectorSet(XM_PI, XM_2PI, XM_PIDIV2, XM_1DIV2PI);
+		Utils::PrintXMVector(v, "v");
+
+		Utils::PrintXMVector(XMVectorCos(v), "XMVectorCos(v)");			// XMVectorCos(v) : { -1, 1, -6.229855e-08, 0.98736155 }
+		Utils::PrintXMVector(XMVectorSin(v), "XMVectorSin(v)");			// XMVectorSin(v) : { 0, 0, 1, 0.15848388 }
+		Utils::PrintXMVector(XMVectorCosEst(v), "XMVectorCosEst(v)");	// XMVectorCosEst(v) : { -1, 1, -6.229855e-08, 0.9873633 }
+		Utils::PrintXMVector(XMVectorSinEst(v), "XMVectorSinEst(v)");	// XMVectorSinEst(v) : { 0, 0, 1, 0.15848391 }
+		Utils::PrintXMVector(XMVectorACos(v), "XMVectorACos(v)");		// XMVectorACos(v) : { 0, -0, 0, 1.4109616 }							: ACos : arccos value
+		Utils::PrintXMVector(XMVectorASin(v), "XMVectorASin(v)");		// XMVectorASin(v) : { 1.5707964, 1.5707964, 1.5707964, 0.15983474 }	: ASin : arcsin value 
+
+		// void XMVectorSinCos(XMVECTOR* pSin, XMVECTOR* pCos, XMVECTOR v) can compute sin and cose at once.
+		XMVECTOR sinValue = {}, cosValue = {};
+		XMVectorSinCos(&sinValue, &cosValue, v);
+		Utils::PrintXMVector(sinValue, "sin result of XMVectorSinCos(sin, cos, v)");	// sin result of XMVectorSinCos(sin, cos, v) : { 0, 0, 1, 0.15848388 }
+		Utils::PrintXMVector(cosValue, "cos result of XMVectorSinCos(sin, cos, v)");	// cos result of XMVectorSinCos(sin, cos, v) : { -1, 1, -6.229855e-08, 0.98736155 }
+
+	}
+
+	std::println();
+
+	// 2. Vector Arithmetic Operation Functions
+	{
+		std::println("2. Vector Arithmetic Operation Functions");
+
+		// DirectXMath provides various arithmetic operations for XMVECTOR and XMMATRIX.
+		// For now, we will take a look XMVECTOR's arithmetic functions.
+
+		XMVECTOR v1 = XMVectorSet(-1.f, -2.f, 3.f, 4.f);
+		XMVECTOR v2 = XMVectorSet(-5.f, 6.f, -7.f, 8.f);
+		Utils::PrintXMVector(v1, "v1");
+		Utils::PrintXMVector(v2, "v2");
+
+		// XMVECTOR XMVectorAbs(XMVECTOR v) will returns absolute value of each element.
+		Utils::PrintXMVector(XMVectorAbs(v1), "XMVectorAbs(v1)");	// XMVectorAbs(v1) : { 1, 2, 3, 4 }
+
+		// XMVECTOR XMVectorAdd(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains sum of each element.
+		// XMVECTOR XMVectorSubtract(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains subtract of each element.
+		// XMVECTOR XMVectorMultiply(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains multiply of each element.
+		// XMVECTOR XMVectorDivide(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains division of each element.
+		// XMVECTOR XMVectorMod(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains remainder (v1 % v2).
+		Utils::PrintXMVector(XMVectorAdd(v1, v2), "XMVectorAdd(v1, v2)");				// XMVectorAdd(v1, v2) : { -6, 4, -4, 12 }
+		Utils::PrintXMVector(XMVectorSubtract(v1, v2), "XMVectorSubtract(v1, v2)");		// XMVectorSubtract(v1, v2) : { 4, -8, 10, -4 }
+		Utils::PrintXMVector(XMVectorMultiply(v1, v2), "XMVectorMultiply(v1, v2)");		// XMVectorMultiply(v1, v2) : { 5, -12, -21, 32 }
+		Utils::PrintXMVector(XMVectorDivide(v1, v2), "XMVectorDivide(v1, v2)");			// XMVectorDivide(v1, v2) : { 0.2, -0.33333334, -0.42857143, 0.5 }
+		Utils::PrintXMVector(XMVectorMod(v1, v2), "XMVectorMod(v1, v2)");				// XMVectorMod(v1, v2) : { -1, -2, 3, 4 }
+
+		// XMVECTOR XMVectorScale(XMVECTOR v, float s) will returns scalar multiply of v
+		// XMVECTOR XMVectorNegate(XMVECTOR v) will returns v * -1
+		Utils::PrintXMVector(XMVectorScale(v1, 5), "XMVectorScale(v1, 5)");		// XMVectorScale(v1, 5) : { -5, -10, 15, 20 }
+		Utils::PrintXMVector(XMVectorNegate(v1), "XMVectorNegate(v1)");			// XMVectorNegate(v1) : { 1, 2, -3, -4 }
+
+		// XMVECTOR XMVectorSqrt(XMVECTOR v) will returns square-root of each elements.
+		// This one has XMVectorSqrtEst(XMVECTOR v) version, which returns approximate value.
+		Utils::PrintXMVector(XMVectorSqrt(v1), "XMVectorSqrt(v1)");			// XMVectorSqrt(v1) : { -nan, -nan, 1.7320508, 2 }		(sqrt of negative value is nan)
+		Utils::PrintXMVector(XMVectorSqrtEst(v1), "XMVectorSqrtEst(v1)");	// XMVectorSqrtEst(v1) : { -nan, -nan, 1.7320508, 2 }
+
+		// XMVECTOR XMVectorMultiplyAdd(XMVECTOR v1, XMVECTOR v2, XMVECTOR v3) will return (v1 * v2) + v3 of each elements.
+		// result r will be { x1x2 + x3, y1y2 + y3, z1z2 + z3, w1w2 + w3 }
+		Utils::PrintXMVector(XMVectorMultiplyAdd(v1, v2, v1), "XMVectorMultiplyAdd(v1, v2, v1)");	// XMVectorMultiplyAdd(v1, v2, v1) : { 4, -14, -18, 36 }
+
+		// XMVECTOR XMVectorClamp(XMVECTOR v, XMVECTOR min, XMVECTOR max) will returns clamped XMVECTOR between [ elementof(min), elementof(max) ].
+		// XMVECTOR XMVectorSaturate(XMVECTOR v) will returns clamped XMVECTOR between [0, 1].
+		Utils::PrintXMVector(XMVectorSaturate(v1), "XMVectorSaturate(v1)");		// XMVectorSaturate(v1) : { 0, 0, 1, 1 }
+		Utils::PrintXMVector(XMVectorClamp(v1, XMVectorSet(-1.f, -1.f, -1.f, -1.f), XMVectorSet(1.f, 1.f, 1.f, 1.f)), "XMVectorClamp(v1, XMVectorSet(-1.f, -1.f, -1.f, -1.f), XMVectorSet(1.f, 1.f, 1.f, 1.f))");	
+		// XMVectorClamp(v1, XMVectorSet(-1.f, -1.f, -1.f, -1.f), XMVectorSet(1.f, 1.f, 1.f, 1.f)) : { -1, -1, 1, 1 }
+		
+		// XMVECTOR XMVectorAddAngles(XMVECTOR v1, XMVECTOR v2) will returns sum of v1 and v2.
+		// Diffrece between XMVectorAdd() is XMVectorAddAngles() returns value between [-PI, PI)
+		Utils::PrintXMVector(XMVectorAdd(v1, v2), "XMVectorAdd(v1, v2)");				// XMVectorAdd(v1, v2) : { -6, 4, -4, 12 }
+		Utils::PrintXMVector(XMVectorAddAngles(v1, v2), "XMVectorAddAngles(v1, v2)");	// XMVectorAddAngles(v1, v2) : { 0.28318548, -2.2831855, 2.2831855, 5.7168145 }
+		
+		v1 = XMVectorSet(1.2f, -2.4f, 3.6f, -4.8f);
+		v2 = XMVectorSet(-1.2f, 2.4f, -3.6f, 4.8f);
+		std::println("v1, v2 changed");
+		Utils::PrintXMVector(v1, "v1");
+		Utils::PrintXMVector(v2, "v2");
+
+		// XMVECTOR XMVectorCeiling(XMVECTOR v) will returns ceiling value of each elements.
+		// XMVECTOR XMVectorFloor(XMVECTOR v) will returns floor value of each elements.
+		Utils::PrintXMVector(XMVectorCeiling(v1), "XMVectorCeiling(v1)");	// XMVectorCeiling(v1) : { 2, -2, 4, -4 }
+		Utils::PrintXMVector(XMVectorFloor(v1), "XMVectorFloor(v1)");		// XMVectorFloor(v1) : { 1, -3, 3, -5 }
+		
+		// XMVECTOR XMVectorMin(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains min value of each elements.
+		// XMVECTOR XMVectorMax(XMVECTOR v1, XMVECTOR v2) will returns XMVECTOR contains max value of each elements.
+		Utils::PrintXMVector(XMVectorMin(v1, v2), "XMVectorMin(v1, v2)");  // XMVectorMin(v1, v2) : { -1.2, -2.4, -3.6, -4.8 }
+		Utils::PrintXMVector(XMVectorMax(v1, v2), "XMVectorMax(v1, v2)");  // XMVectorMax(v1, v2) : { 1.2, 2.4, 3.6, 4.8 }
+
+		// XMVECTOR XMVectorReciprocal(XMVECTOR v) will returns reciprocal value of each elements. Est version is option.
+		// XMVECTOR XMVectorReciprocalSqrt(XMVECTOR v) will returns reciprocal value of sqrt(elements). Est version is option.
+		Utils::PrintXMVector(XMVectorReciprocal(v1), "XMVectorReciprocal(v1)");					// XMVectorReciprocal(v1) : { 0.8333333, -0.41666666, 0.2777778, -0.20833333 }
+		Utils::PrintXMVector(XMVectorReciprocalEst(v1), "XMVectorReciprocalEst(v1)");			// XMVectorReciprocalEst(v1) : { 0.833374, -0.416687, 0.277771, -0.2083435 }
+		Utils::PrintXMVector(XMVectorReciprocalSqrt(v1), "XMVectorReciprocalSqrt(v1)");			// XMVectorReciprocalSqrt(v1) : { 0.9128709, -nan, 0.5270463, -nan }
+		Utils::PrintXMVector(XMVectorReciprocalSqrtEst(v1), "XMVectorReciprocalSqrtEst(v1)");	// XMVectorReciprocalSqrtEst(v1) : { 0.91296387, -nan, 0.52697754, -nan }
+
+		// XMVECTOR XMVectorRound(XMVECTOR v) will returns rounded value of each elements.
+		// XMVECTOR XMVectorTruncate(XMVECTOR v) will returns int(remove decimal) value of each elements.
+		Utils::PrintXMVector(XMVectorRound(v1), "XMVectorRound(v1)");			// XMVectorRound(v1) : { 1, -2, 4, -5 }
+		Utils::PrintXMVector(XMVectorTruncate(v1), "XMVectorTruncate(v1)");		// XMVectorTruncate(v1) : { 1, -2, 3, -4 }
+
+		// XMVECTOR XMVectorModAngles(XMVECTOR v) returns remainder from devided by 2PI. (v represent radian angles)
+		Utils::PrintXMVector(XMVectorModAngles(v1), "XMVectorModAngles(v1)");	// XMVectorModAngles(v1) : { 1.2, -2.4, -2.6831856, 1.4831853 }
+
+		// XMVECTOR XMVectorIsInfinite(XMVECTOR v) will check if each element is inf and return as vector.
+		// XMVECTOR XMVectorIsNaN(XMVECTOR v) will check if each element is nan and return as vector.
+		Utils::PrintXMVector(XMVectorIsInfinite(v1), "XMVectorIsInfinite(v1)");						// XMVectorIsInfinite(v1) : { 0, 0, 0, 0 }
+		Utils::PrintXMVector(XMVectorIsNaN(XMVectorSqrt(v1)), "XMVectorIsNaN(XMVectorSqrt(v1))");	// XMVectorIsNaN(XMVectorSqrt(v1)) : { 0, -nan, 0, -nan }
+
+	}
+
+	std::println();
+
+	// 3. Vector Comparison Functions
+	{
+		std::println("3. Vector Comparison Functions");
+		// 3-1. Comparing Vectors
+		// Like XMColor... Comparison functions, XMVector... Comparison functions is also provided by DirectXMath.
+		// This time, We will take a look about some special comparison functions.
+
+		std::println("3-1. Comparing Vectors");
+
+		XMVECTOR v1 = XMVectorSet(1.2f, 2.4f, 3.6f, 4.8f);
+		XMVECTOR v2 = XMVectorScale(v1, 2.f);
+		Utils::PrintXMVector(v1, "v1");
+		Utils::PrintXMVector(v2, "v2");
+
+		// "XMVectorEqual(XMVECTOR v1, XMVECTOR v2)" vs "XMVectorNearEqual(XMVECTOR v1, XMVECTOR v1, float epsilon)"
+		// XMVectorEqual is exact comparison between v1, v2. floating-point error will not be consider.
+		// XMVectorNearEqual is comparison considering floating-point error. You can use designate epsilon value
+		// Return value is not bool value. It will be computed like this:
+		// rx = (x1 == x2) ? 0xffffffff : 0
+		// ry = (y1 == y2) ? 0xffffffff : 0
+		// rz = (z1 == z2) ? 0xffffffff : 0
+		// rw = (w1 == w2) ? 0xffffffff : 0
+		// I tried to make floating-point error in example below but XM functions is quite precise...
+
+		Utils::PrintXMVector(XMVectorScale(v2, 0.5f), "XMVectorScale(v2, 0.5f))");
+		Utils::PrintXMVector(XMVectorEqual(v1, v2), "XMVectorEqual(v1, v2)");		// XMVectorEqual(v1, v2) : { 0, 0, 0, 0 }
+		Utils::PrintXMVector(XMVectorEqual(v1, XMVectorScale(v2, 0.5f)), "XMVectorEqual(v1, XMVectorScale(v2, 0.5f))");		// XMVectorEqual(v1, XMVectorScale(v2, 0.5f)) : { -nan, -nan, -nan, -nan }
+		Utils::PrintXMVector(XMVectorNearEqual(v1, XMVectorScale(v2, 0.5f), XMVectorReplicate(FLT_EPSILON)), "XMVectorNearEqual(v1, XMVectorScale(v2, 0.5f), XMVectorReplicate(FLT_EPSILON))");	   
+		// XMVectorNearEqual(v1, XMVectorScale(v2, 0.5f), XMVectorReplicate(FLT_EPSILON)) : { -nan, -nan, -nan, -nan }
+
+		// XMVector...R() functions are something special. Like XMVectorEqualR(uint32_t *pCR, XMVECTOR v1, XMVECTOR v2)
+		// ...R() series functions will return "XM_CRMASK_CR6TRUE" in pCR output parameter if every component of result if 0xffffffff.
+		// Else, return XM_CRMASK_CR6FALSEin pCR output parameter.
+		// There are special functions for check pCR value
+		// bool XMComparisonAllTrue(uint32_t CR) will return true when CR is XM_CRMASK_CR6TRUE.
+		// bool XMComparisonAllFalse(uint32_t CR) will return true when CR is XM_CRMASK_CR6FALSE.
+		// bool XMComparisonAnyTrue(uint32_t CR) will return true when CR is not XM_CRMASK_CR6FALSE.
+		// bool XMComparisonAnyFalse(uint32_t CR) will return true when CR is not XM_CRMASK_CR6TRUE.
+		// So, ...R() functions will be use like this:
+
+		uint32_t CR;
+		XMVectorEqualR(&CR, v1, XMVectorScale(v2, 0.5f));
+		std::cout << std::boolalpha << "XMComparisonAllTrue(CR) : " << XMComparisonAllTrue(CR) << '\n';	// XMComparisonAllTrue(CR) : true
+
+		// Other comparison is same as above.
+		// Such as : XMVectorGreator() -> XMVectorGreatorR() / XMVectorLessOrEqual() -> XMVectorLessOrEqualR() / ...
+
+		std::println();
+
+		// 3-2. Comparing 3D Vectors
+		// Compare functions for 3D Vectors are similar to the above.
+		// 3D Vector comparison will compare vectors except w-element.
+		// ...R() series comparison functions for 3D vectors are return CRMASK directly
+		// Like this : uint32_t XMVector3EqualR(XMVECTOR v1, XMVECTOR v2)
+
+		std::println("3-2. Comparing 3D Vectors");
+
+		v1 = XMVectorSet(1.f, 2.f, 3.f, 4.f);
+		v2 = XMVectorSet(1.f, 2.f, 3.f, 100.f);
+		std::println("v1, v2 changed");
+		Utils::PrintXMVector(v1, "v1");
+		Utils::PrintXMVector(v2, "v2");
+
+		std::cout << "XMComparisonAllTrue(XMVector3EqualR(v1, v2)) : " << XMComparisonAllTrue(XMVector3EqualR(v1, v2)) << '\n';	// XMComparisonAllTrue(XMVector3EqualR(v1, v2)) : true
+	}
+
+	std::println();
+
+	// 4. Vector Geometric Functions
+	{
+		std::println("4. Vector Geometric Functions");
+
+		XMVECTOR v1 = XMVectorSet(1.2f, 2.4f, 3.6f, 4.8f);
+		XMVECTOR v2 = XMVectorScale(v1, 1.5f);
+		XMVECTOR v3 = XMVectorScale(v2, 2.f);
+		Utils::PrintXMVector(v1, "v1");
+		Utils::PrintXMVector(v2, "v2");
+		Utils::PrintXMVector(v3, "v3");
+
+		// XMVECTOR XMVectorBaryCentric(XMVECTOR p0, p1, p2, float f, float g) will return point on plane whic contains triangle(composed with p0, p1, p2)
+		// XMVECTOR XMVectorBaryCentricV(XMVECTOR p0, p1, p2, XMVECTOR f, g) is same as above but Barycentric coordiantes is represented by vectors.
+		// point on plane can be represented by Barycentric coordinates(f, g).
+		// t must be in between [0, 1]
+		// Return value q will be compute as : p0 + f(p1 - p0) + g(p2 - p0).
+		// Look at below :
+		//
+		//	         p1 --- p2
+		//	         |     /
+		//	         |    /
+		// f*(p1-p0) ¡è   ¢Ö g*(p2 - p0)
+		//	         |  /
+		//	         | /
+		//	         p0
+		//
+
+		Utils::PrintXMVector(XMVectorBaryCentric(v1, v2, v3, 0.2, 0.3), "XMVectorBaryCentric(v1, v2, v3, 0.2, 0.3)");	// XMVectorBaryCentric(v1, v2, v3, 0.2, 0.3) : { 2.0400002, 4.0800004, 6.12, 8.160001 }
+		Utils::PrintXMVector(XMVectorBaryCentricV(v1, v2, v3, XMVectorReplicate(0.2), XMVectorReplicate(0.3)), "XMVectorBaryCentricV(v1, v2, v3, XMVectorReplicate(0.2), XMVectorReplicate(0.3))");
+		// XMVectorBaryCentricV(v1, v2, v3, XMVectorReplicate(0.2), XMVectorReplicate(0.3)) : { 2.0400002, 4.0800004, 6.12, 8.160001 }
+
+		// Special conditions of XMVectorBaryCentric() :
+		// if (f <= 0) && (g >= 0) && (f + g <= 1) : q is in triangle
+		// if (f == 0) && (g >= 0) && (f + g <= 1) : q is on line (p0,p2) 
+		// if (f >= 0) && (g == 0) && (f + g <= 1) : q is on line (p0,p1) 
+		// if (f >= 0) && (g >= 0) && (f + g == 1) : q is on line (p1,p2) 
+
+
+		// XMVECTOR XMVectorLerp(XMVECTOR v0, XMVECTOR v1, float t) will return linear interpolated result between [v0, v1] using parameter t.
+		// t must be in between [0, 1]
+		Utils::PrintXMVector(XMVectorLerp(v1, v2, 0.5f), "XMVectorLerp(v1, v2, 0.5f)");	// XMVectorLerp(v1, v2, 0.5f) : { 1.5, 3, 4.5, 6 } -> this is center of line(v1, v2)
+
+		// XMVECTOR XMVectorHeimite(XMVECTOR p0, XMVECTOR tangent0, XMVECTOR p1, XMVECETOR tangent1, float t)
+		// This will return one point on Heimite Spline created by p0, p1, tangent0, tangent1.
+		// Return value q(t) will be compute like this : (2t^3 - 3t^2 + 1)p0 + (t^3 - 2t^2 + t)t0 + (-2t^3 + 3t^2)p1 + (t^3 - t^2)t1
+		// t must be in between [0, 1]
+
+		// XMVECTOR XMVectorCatmullRom(XMVECTOR p0, XMVECTOR p1, XMVECTOR p2, XMVECTOR p3, float t)
+		// This will return one point on Catmull-Rom Spline created by p0, p1, p2, p3.
+		// Return value q(t) will be compute like this : (-1/2t^3 + t^2 - 1/2t)p0 + (3/2t^3 - 5/2t^2 + 1)p1 + (-3/2t^3 + 2t^2 + 1/2t)p2 + (1/2t^3 - 1/2t^2)p3
+		// t must be in between [0, 1]
+
+		Utils::PrintXMVector(XMVectorHermite(v1, XMVectorReplicate(1.f), v2, XMVectorReplicate(-1.f), 0.5f), "XMVectorHermite(v1, XMVectorReplicate(1.f), v2, XMVectorReplicate(-1.f), 0.5f)");
+		Utils::PrintXMVector(XMVectorCatmullRom(v1, v2, v3, XMVectorReplicate(0.f), 0.5f), "XMVectorCatmullRom(v1, v2, v3, XMVectorReplicate(0.f), 0.5f)");
+		// XMVectorHermite(v1, XMVectorReplicate(1.f), v2, XMVectorReplicate(-1.f), 0.5f) : { 1.75, 3.25, 4.75, 6.25 }
+		// XMVectorCatmullRom(v1, v2, v3, XMVectorReplicate(0.f), 0.5f) : { 2.9625, 5.925, 8.8875, 11.85 }
+
+		// XMVECTOR XMVectorInBounds(XMVECTOR v, XMVECTOR bounds) checks point v is in bounds and return as vector
+		// Return value will be computed as same as comparison functions.
+		// This means XMVectorInBoundsR() is also available. You can use this and check using XMComparison...() functions.
+		Utils::PrintXMVector(XMVectorInBounds(v1, XMVectorReplicate(3.f)), "XMVectorInBounds(v1, XMVectorReplicate(3.f))");	// XMVectorInBounds(v1, XMVectorReplicate(3.f)) : { -nan, -nan, 0, 0 } <- true ture false false
+
+		// There is special comarison functions for XMVectorInBoundsR() : bool XMComparisonAllInBounds(uint32_t CR) / bool XMComparisonAnyInBounds(uint32_t CR)
+		uint32_t CR = 0;
+		XMVectorInBoundsR(&CR, v1, XMVectorReplicate(3.f));
+		std::println("v1 is in bound(3.f,3.f,3.f,3.f)? : {}", XMComparisonAllInBounds(CR) ? "TRUE" : "FALSE");
+		std::println("any of v1 elements are out of bound(3.f,3.f,3.f,3.f)? : {}", XMComparisonAnyOutOfBounds(CR) ? "TRUE" : "FALSE");
+		
+		
+
+
+	}
+}
+
 
 int main()
 {
@@ -461,7 +740,11 @@ int main()
 	std::cout << std::boolalpha << "Is this system support SIMD for DirectXMath? : " << XMVerifyCPUSupport() << '\n';
 
 	// 1. Basics
-	XMBasicsTest();
+	//XMBasics();
+
+	// 2. 3D Graphics Fundamentals
+	XM3DGraphicsFundametals();
+
 
 
 }
