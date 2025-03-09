@@ -1,4 +1,4 @@
-// ------------------------------------------------------------------
+ï»¿// ------------------------------------------------------------------
 // Tutorial for DirectXMath
 // ------------------------------------------------------------------
 
@@ -14,6 +14,8 @@ using namespace DirectX::PackedVector;
 #include <iostream>
 #include <print>
 #include <typeinfo>
+#include <string>
+#include <vector>
 
 #include "Utils.h"
 using namespace std::literals;
@@ -24,12 +26,12 @@ void XMBasics()
 	// 1. Constants(radian)
 	// DirectXMath provides some constants like radian : more in DirectXMath.h 
 	std::println("1. Constants(radian)");
-	std::println("XM_PI (¥ð) : {}", XM_PI);
-	std::println("XM_2PI (2¥ð) : {}", XM_2PI);
-	std::println("XM_1DIVPI (1/¥ð) : {}", XM_1DIVPI);
-	std::println("XM_1DIV2PI (1/2¥ð) : {}", XM_1DIVPI);
-	std::println("XM_PIDIV2 (¥ð/2) : {}", XM_PIDIV2);
-	std::println("XM_PIDIV4 (¥ð/4) : {}", XM_PIDIV2);
+	std::println("XM_PI (Ï€) : {}", XM_PI);
+	std::println("XM_2PI (2Ï€) : {}", XM_2PI);
+	std::println("XM_1DIVPI (1/Ï€) : {}", XM_1DIVPI);
+	std::println("XM_1DIV2PI (1/2Ï€) : {}", XM_1DIVPI);
+	std::println("XM_PIDIV2 (Ï€/2) : {}", XM_PIDIV2);
+	std::println("XM_PIDIV4 (Ï€/4) : {}", XM_PIDIV2);
 
 	std::println();
 
@@ -679,9 +681,9 @@ void XM3DGraphicsFundametals()
 		//	         p1 --- p2
 		//	         |     /
 		//	         |    /
-		// f*(p1-p0) ¡è   ¢Ö g*(p2 - p0)
+		// f*(p1-p0) â†‘   â†— g*(p2 - p0)
 		//	         |  /
-		//	         | /
+		//	         | /z
 		//	         p0
 		//
 
@@ -720,16 +722,407 @@ void XM3DGraphicsFundametals()
 		// This means XMVectorInBoundsR() is also available. You can use this and check using XMComparison...() functions.
 		Utils::PrintXMVector(XMVectorInBounds(v1, XMVectorReplicate(3.f)), "XMVectorInBounds(v1, XMVectorReplicate(3.f))");	// XMVectorInBounds(v1, XMVectorReplicate(3.f)) : { -nan, -nan, 0, 0 } <- true ture false false
 
-		// There is special comarison functions for XMVectorInBoundsR() : bool XMComparisonAllInBounds(uint32_t CR) / bool XMComparisonAnyInBounds(uint32_t CR)
+		// There are special comarison functions for XMVectorInBoundsR() : bool XMComparisonAllInBounds(uint32_t CR) / bool XMComparisonAnyInBounds(uint32_t CR)
 		uint32_t CR = 0;
 		XMVectorInBoundsR(&CR, v1, XMVectorReplicate(3.f));
-		std::println("v1 is in bound(3.f,3.f,3.f,3.f)? : {}", XMComparisonAllInBounds(CR) ? "TRUE" : "FALSE");
-		std::println("any of v1 elements are out of bound(3.f,3.f,3.f,3.f)? : {}", XMComparisonAnyOutOfBounds(CR) ? "TRUE" : "FALSE");
-		
-		
+		std::println("v1 is in bound(3.f,3.f,3.f,3.f)? : {}", XMComparisonAllInBounds(CR) ? "TRUE" : "FALSE");							 // v1 is in bound(3.f,3.f,3.f,3.f)? : FALSE
+		std::println("any of v1 elements are out of bound(3.f,3.f,3.f,3.f)? : {}", XMComparisonAnyOutOfBounds(CR) ? "TRUE" : "FALSE");	 // any of v1 elements are out of bound(3.f,3.f,3.f,3.f)? : TRUE
+	}
 
+	std::println();
+
+	// 5. 3D Vector Transformation Functions
+	{
+		std::println("5. 3D Vector Transformation Functions");
+
+		XMVECTOR v1 = XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+		XMVECTOR v2 = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);
+		XMVECTOR v3 = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+		XMVECTOR v4 = XMVectorSet(5.0f, 5.0f, 5.0f, 5.0f);
+		Utils::PrintXMVector(v1, "v1");
+		Utils::PrintXMVector(v2, "v2");
+		Utils::PrintXMVector(v3, "v3");
+		Utils::PrintXMVector(v4, "v3");
+
+		// The following functions are about 3D vector transformation functions using matrix or quaternion.
+		// If functions input is point vector, w-element will be turn into 1.
+		// If functions input is direction(normal) vector, w-element will be turn into 0;
+
+		// XMVECTOR XMVector3Transform(XMVECTOR v, XMMATRIX m) returns result of v * m.
+		// This will never convert to 3D homogeneous coordinates.
+		Utils::PrintXMVector(XMVector3Transform(v4, XMMatrixTranslation(1.f, 2.f, 3.f)), "XMVector3Transform(v4, XMMatrixTranslation(1.f, 2.f, 3.f))");	// XMVector3Transform(v4, XMMatrixTranslation(1.f, 2.f, 3.f)) : { 6, 7, 8, 1 }
+
+		// XMVECTOR XMVector3TransformCoord(XMVECTOR v, XMMATRIX m) makes v's w-element into 1 and homonize result of (v * m)
+		// return value r will be always looks like { rx, ry, rz, 1 }
+		Utils::PrintXMVector(XMVector3TransformCoord(v4, XMMatrixTranslation(1.f, 2.f, 3.f)), "XMVector3TransformCoord(v4, XMMatrixTranslation(1.f, 2.f, 3.f)");	// XMVector3TransformCoord(v4, XMMatrixTranslation(1.f, 2.f, 3.f) : { 6, 7, 8, 1 }
+
+		// XMVECTOR XMVector3TransformNormal(XMVECTOR v, XMMATRIX m) makes v's w-element into 0 and return result of (v * m)
+		// To transform normal vector, transformation matrix must be transposed inverse matrix.
+		Utils::PrintXMVector(XMVector3TransformNormal(v4, XMMatrixTranslation(1.f, 2.f, 3.f)), "XMVector3TransformNormal(v4, XMMatrixTranslation(1.f, 2.f, 3.f))");	// XMVector3TransformNormal(v4, XMMatrixTranslation(1.f, 2.f, 3.f)) : { 5, 5, 5, 0 }
+
+		// XMFLOAT3 XMVector3TransformCoordStream(XMFLOAT3* pOutputStream, size_t outputStride, XMFLOAT3* pInputStream, size_t inputStride, size_t vectorCount, XMMATRIX m)
+		// XMFLOAT3 XMVector3TransformNormalStream(XMFLOAT3* pOutputStream, size_t outputStride, XMFLOAT3* pInputStream, size_t inputStride, size_t vectorCount, XMMATRIX m)
+		// This two above is same as XMVector3TransfromCoord() and XMVector3TransformNormal(), but read array(stream) of vector and return as array.
+
+		std::vector<XMFLOAT3> inputStream = {};
+		std::vector<XMFLOAT3> outputCoord(4);
+		std::vector<XMFLOAT3> outputNormal(4);
+
+		XMFLOAT3 store1 = {}, store2 = {}, store3 = {}, store4 = {};
+		XMStoreFloat3(&store1, v1); inputStream.push_back(store1);
+		XMStoreFloat3(&store2, v2); inputStream.push_back(store2);
+		XMStoreFloat3(&store3, v3); inputStream.push_back(store3);
+		XMStoreFloat3(&store4, v4); inputStream.push_back(store4);
+
+		XMVector3TransformCoordStream(outputCoord.data(), sizeof(XMFLOAT3), inputStream.data(), sizeof(XMFLOAT3), inputStream.size(), XMMatrixTranslation(1.f, 2.f, 3.f));
+		XMVector3TransformNormalStream(outputNormal.data(), sizeof(XMFLOAT3), inputStream.data(), sizeof(XMFLOAT3), inputStream.size(), XMMatrixTranslation(1.f, 2.f, 3.f));
+
+		for (int i = 0; i < outputCoord.size(); i++) Utils::PrintXMVector(XMLoadFloat3(&outputCoord[i]), "XMVectorTransformCoordStream's result[" + std::to_string(i) + "]");
+		for (int i = 0; i < outputCoord.size(); i++) Utils::PrintXMVector(XMLoadFloat3(&outputCoord[i]), "XMVector3TransformNormalStream's result[" + std::to_string(i) + "]");
+		/*
+			XMVectorTransformCoordStream's result[0] : { 2, 2, 3, 0 }
+			XMVectorTransformCoordStream's result[1] : { 1, 3, 3, 0 }
+			XMVectorTransformCoordStream's result[2] : { 1, 2, 4, 0 }
+			XMVectorTransformCoordStream's result[3] : { 6, 7, 8, 0 }
+			XMVector3TransformNormalStream's result[0] : { 2, 2, 3, 0 }
+			XMVector3TransformNormalStream's result[1] : { 1, 3, 3, 0 }
+			XMVector3TransformNormalStream's result[2] : { 1, 2, 4, 0 }
+			XMVector3TransformNormalStream's result[3] : { 6, 7, 8, 0 }
+		*/
+
+		// XMVECTOR XMVector3Rotate(XMVECTOR v, XMVECTOR quaternion) returns rotated v using quaternion.
+		// XMVECTOR XMVector3InverseRotate(XMVECTOR v, XMVECTOR quaternion) returns inverse-rotated v using quaternion.
+
+		Utils::PrintXMVector(XMVector3Rotate(v1, XMQuaternionRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI)), "XMVector3Rotate(v1, XMQuaternionRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI))");
+		Utils::PrintXMVector(XMVector3InverseRotate(v1, XMQuaternionRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI)), "XMVector3InverseRotate(v1, XMQuaternionRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI))");
+		// XMVector3Rotate(v1, XMQuaternionRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI)) : { -2.9802322e-08, -8.940697e-08, 0.9999999, 0 }
+		// XMVector3InverseRotate(v1, XMQuaternionRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI)) : { -2.9802322e-08, -0.7071067, 0.7071067, 0 }
+
+
+		// XMVECTOR XMVector3Project(XMVECTOR v, float viewportX, float viewportY, float viewportWidth, float viewportHeight, float viewportMinZ, float viewportMAxZ, XMMATRIX projection, XMMATRIX view, XMMATRIX world)
+		// XMVECTOR XMVector3UnProject(XMVECTOR v, float viewportX, float viewportY, float viewportWidth, float viewportHeight, float viewportMinZ, float viewportMAxZ, XMMATRIX projection, XMMATRIX view, XMMATRIX world)
+		// This two functions above are return Projects - Unprojects v
+		// The result of XMVector3Projection will be screen-space translated v (orginal v must be in model-space).
+		// The result of XMVector3UnProject will be model-space translated v (original v must be in screen-space).
+
+		// We will assume that viewportX, Y will be 0, 0 / width, height = 1920 * 1080 / minZ, maxZ = 1, 100 / camara is in origin of world and looking forward(+z) / fov = 90 / 
+		
+		XMMATRIX world = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(XM_PIDIV4, XM_PIDIV2, XM_PI), XMMatrixTranslation(1.f, 2.f, 3.f));
+		XMMATRIX view = XMMatrixLookAtLH(XMVectorReplicate(0.f), XMVectorSet(0.f, 0.f, 1.f, 1.f), XMVectorSet(0.f, 1.f, 0.f, 1.f));
+		XMMATRIX proj = XMMatrixPerspectiveFovLH(90.f, 1920 / 1080, 10, 100);
+
+		XMVECTOR v1Projected = XMVector3Project(v1, 0.f, 0.f, 1920, 1080, 10, 100, proj, view, world);
+		XMVECTOR v1UnProjected = XMVector3Unproject(v1Projected, 0.f, 0.f, 1920, 1080, 10, 100, proj, view, world);
+
+		Utils::PrintXMVector(v1Projected, "v1Projected");		// v1Projected : { 1108.1696, 373.30923, -140, 0 }
+		Utils::PrintXMVector(v1UnProjected, "v1UnProjected");	// v1UnProjected : { 1.0000001, -9.744818e-08, 2.1665748e-07, 1 }
+
+		// XMFLOAT3* XMVector3ProjectStream() / XMFLOAT3* XMVectorUnprojectStream() is also available.
+
+		std::vector<XMFLOAT3> outputProj(4);
+		std::vector<XMFLOAT3> outputUnproj(4);
+
+		XMVector3ProjectStream(outputProj.data(), sizeof(XMFLOAT3), inputStream.data(), sizeof(XMFLOAT3), inputStream.size(), 0, 0, 1920, 1080, 10, 100, proj, view, world);
+		XMVector3UnprojectStream(outputUnproj.data(), sizeof(XMFLOAT3), outputProj.data(), sizeof(XMFLOAT3), outputProj.size(), 0, 0, 1920, 1080, 10, 100, proj, view, world);
+
+		for (int i = 0; i < outputProj.size(); i++) Utils::PrintXMVector(XMLoadFloat3(&outputProj[i]), "XMVector3ProjectStream's result[" + std::to_string(i) + "]");
+		for (int i = 0; i < outputUnproj.size(); i++) Utils::PrintXMVector(XMLoadFloat3(&outputUnproj[i]), "XMVector3UnprojectStream's result[" + std::to_string(i) + "]");
+		/*
+			XMVector3ProjectStream's result[0] : { 1108.1696, 373.30923, -140, 0 }
+			XMVector3ProjectStream's result[1] : { 1017.86383, 396.32443, -223.33334, 0 }
+			XMVector3ProjectStream's result[2] : { 1297.2551, 396.32443, -223.33334, 0 }
+			XMVector3ProjectStream's result[3] : { 1034.0848, 751.3251, -15.000001, 0 }
+			XMVector3UnprojectStream's result[0] : { 1.0000001, -1.192093e-07, 2.384186e-07, 0 }
+			XMVector3UnprojectStream's result[1] : { 8.3679524e-08, 0.9999998, 3.576279e-07, 0 }
+			XMVector3UnprojectStream's result[2] : { 1.7178299e-07, -4.4703486e-07, 1.0000006, 0 }
+			XMVector3UnprojectStream's result[3] : { 5, 4.9999995, 5.000001, 0 }
+		*/
 
 	}
+
+	std::println();
+
+	// 6. Matrix Functions
+	{
+		// This time, we will take a look about XMMATRIX functions.
+	
+		// XMMATRIX XMMatrixSet(float m00, ... float m33) initialze XMMATRIX by value.
+		XMMATRIX m1 = XMMatrixSet(1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f, 13.f, 14.f, 15.f, 16.f);
+		Utils::PrintXMMatrix(m1, "XMMatrixSet()");
+		// { 1, 2, 3, 4 }
+		// { 5, 6, 7, 8 }
+		// { 9, 10, 11, 12 }
+		// { 13, 14, 15, 16 }
+
+		// XMMATRIX XMMatrixIdentity() return 4x4 identity matrix.
+		XMMATRIX m2 = XMMatrixIdentity();
+		Utils::PrintXMMatrix(m2, "XMMatrixIdentity()");
+		// { 1, 0, 0, 0 }
+		// { 0, 1, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 0, 0, 0, 1 }
+
+		// bool XMMatrixIsIdentity(XMMATRIX m) return true if m is identity matrix.
+		// bool XMMatrixIsInfinite(XMMATRIX m) returns true if any of m's elements is inf.
+		// bool XMMatrixIsNaN(XMMATRIX m) return true if any of m's elements is NaN.
+
+		std::println("XMMatrixIsIdentity(m1) : {}", XMMatrixIsIdentity(m1) ? "TRUE" : "FALSE");	// XMMatrixIsIdentity(m1) : FALSE
+		std::println("XMMatrixIsIdentity(m2) : {}", XMMatrixIsIdentity(m2) ? "TRUE" : "FALSE");	// XMMatrixIsIdentity(m2) : TRUE
+		std::println("XMMatrixIsInfinite(m1) : {}", XMMatrixIsInfinite(m1) ? "TRUE" : "FALSE");	// XMMatrixIsInfinite(m1) : FALSE
+		std::println("XMMatrixIsNaN(m1) : {}", XMMatrixIsNaN(m1) ? "TRUE" : "FALSE");			// XMMatrixIsNaN(m1) : FALSE
+
+		// Change m1
+		m1 = XMMatrixMultiplyTranspose(XMMatrixMultiply(XMMatrixScaling(2.f, 2.f, 2.f), XMMatrixRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4)), XMMatrixTranslation(1.f, 2.f, 3.f));
+		Utils::PrintXMMatrix(m1, "Change m1");
+		// { -8.810345e-08, 8.810345e-08, -2, 1 }
+		// { -1.4142135, -1.4142135, 0, 2 }
+		// { -1.4142135, 1.4142135, 1.245971e-07, 3 }
+		// { 0, 0, 0, 1 }
+
+		// XMMATRIX XMMatrixInverse(XMVector* determinant, XMMATRIX m) returns inverse matrix of m
+		// XMVECTOR XMMatrixDeterminant(XMMATRIX m) return determinant of m
+		XMVECTOR detm1 = XMMatrixDeterminant(m1);
+		Utils::PrintXMVector(detm1, "XMMatrixDeterminant(m1)");	// XMMatrixDeterminant(m1) : { 7.9999995, 7.9999995, 7.9999995, 7.9999995 }
+		Utils::PrintXMMatrix(XMMatrixInverse(&detm1, m1), "XMMatrixInverse(&detm1, m1)");
+		// { -2.2025864e-08, -0.3535534, -0.3535534, 1.7677672 }
+		// { 2.2025864e-08, -0.3535534, 0.3535534, -0.35355338 }
+		// { -0.5, 5.5993563e-16, 3.1149277e-08, 0.49999994 }
+		// { 0, 0, 0, 1 }
+
+		// XMMATRIX XMMatrixTranspose(XMMATRIX m) return 4x4 transposed matrix of m.
+		Utils::PrintXMMatrix(XMMatrixTranspose(m1), "XMMatrixTranspose(m1)");
+		// { -8.810345e-08, -1.4142135, -1.4142135, 0 }
+		// { 8.810345e-08, -1.4142135, 1.4142135, 0 }
+		// { -2, 0, 1.245971e-07, 0 }
+		// { 1, 2, 3, 1 }
+
+
+		// XMMATRIX XMMatrixMultiply(XMMATRIX m1, XMMATRIX m2) returns result of m1 * m2.
+		// XMMATRIX XMMatrixMultiplyTranspose(XMMATRIX m1, XMMATRIX m2) returns Transposed m1 * m2.
+		Utils::PrintXMMatrix(XMMatrixMultiply(m1, XMMatrixTranslation(3.f, 2.f, 1.f)), "XMMatrixMultiply(m1, XMMatrixTranslation(3.f, 2.f, 1.f))");
+		Utils::PrintXMMatrix(XMMatrixMultiplyTranspose(m1, XMMatrixTranslation(3.f, 2.f, 1.f)), "XMMatrixMultiplyTranspose(m1, XMMatrixTranslation(3.f, 2.f, 1.f))");
+		// { 3, 2, -1, 1 }
+		// { 4.5857863, 2.5857863, 2, 2 }
+		// { 7.5857863, 7.4142137, 3.0000002, 3 }
+		// { 3, 2, 1, 1 }
+		// 
+		// { 3, 4.5857863, 7.5857863, 3 }
+		// { 2, 2.5857863, 7.4142137, 2 }
+		// { -1, 2, 3.0000002, 1 }
+		// { 1, 2, 3, 1 }
+
+		// XMMATRIX XMMatrixRotationX/Y/Z(float angle) return rotation matrix by angle.
+		
+		Utils::PrintXMMatrix(XMMatrixRotationX(XM_PIDIV4), "XMMatrixRotationX(XM_PIDIV4)");
+		Utils::PrintXMMatrix(XMMatrixRotationY(XM_PIDIV4), "XMMatrixRotationY(XM_PIDIV4)");
+		Utils::PrintXMMatrix(XMMatrixRotationZ(XM_PIDIV4), "XMMatrixRotationZ(XM_PIDIV4)");
+
+		// XMMatrixRotationX(XM_PIDIV4) :
+		// { 1, 0, 0, 0 }
+		// { 0, 0.7071067, 0.70710677, 0 }
+		// { 0, -0.70710677, 0.7071067, 0 }
+		// { 0, 0, 0, 1 }
+		// XMMatrixRotationY(XM_PIDIV4) :
+		// { 0.7071067, 0, -0.70710677, 0 }
+		// { 0, 1, 0, 0 }
+		// { 0.70710677, 0, 0.7071067, 0 }
+		// { 0, 0, 0, 1 }
+		// XMMatrixRotationZ(XM_PIDIV4) :
+		// { 0.7071067, 0.70710677, 0, 0 }
+		// { -0.70710677, 0.7071067, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 0, 0, 0, 1 }
+
+		// XMMATRIX XMMatrixRotationRollPitchYaw(float pitch, float yaw, float roll) returns rotation matrix using euler angle.
+		// XMMATRIX XMMatrixRotationRollPitchYawFromVector(XMVECTOR Angles) are same with above, but parameter is XMVECTOR.
+
+		Utils::PrintXMMatrix(XMMatrixRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), "XMMatrixRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4)");
+		Utils::PrintXMMatrix(XMMatrixRotationRollPitchYawFromVector(XMVectorSet(XM_PI, XM_PIDIV2, XM_PIDIV4, 0.f)), "XMMatrixRotationRollPitchYawFromVector(XMVectorSet(XM_PI, XM_PIDIV2, XM_PIDIV4, 0.f))");
+		// XMMatrixRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4) :
+		// { -4.4051724e-08, -0.70710677, -0.70710677, 0 }
+		// { 4.4051724e-08, -0.70710677, 0.70710677, 0 }
+		// { -1, 0, 6.229855e-08, 0 }
+		// { 0, 0, 0, 1 }
+		// XMMatrixRotationRollPitchYawFromVector(XMVectorSet(XM_PI, XM_PIDIV2, XM_PIDIV4, 0.f)) :
+		// { -4.4051724e-08, -0.70710677, -0.70710677, 0 }
+		// { 4.4051724e-08, -0.70710677, 0.70710677, 0 }
+		// { -1, 0, 6.229855e-08, 0 }
+		// { 0, 0, 0, 1 }
+
+		// XMMATRIX XMMatrixRotationQuaternion(XMVECTOR q) returns rotation matrix using quaternion.
+
+		Utils::PrintXMMatrix(XMMatrixRotationQuaternion(XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4)), "XMMatrixRotationQuaternion(XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4))");
+		//XMMatrixRotationQuaternion(XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4)) :
+		//{ 5.9604645e-08, -0.7071067, -0.7071067, 0 }
+		//{ -1.1920929e-07, -0.7071066, 0.7071067, 0 }
+		//{ -0.9999999, 1.1920929e-07, 5.9604645e-08, 0 }
+		//{ 0, 0, 0, 1 }
+
+		// XMMATRIX XMMatrixTranslation(float a, float b, float 3) returns translation matrix using a,b,c.
+		// XMMATRIX XMMatrixTranslationFromVector(XMVECTOR offset) are same with above, but parameter is XMVECTOR.
+
+		Utils::PrintXMMatrix(XMMatrixTranslation(1.f, 2.f, 3.f), "XMMatrixTranslation(1.f, 2.f, 3.f)");
+		Utils::PrintXMMatrix(XMMatrixTranslationFromVector(XMVectorSet(1.f, 2.f, 3.f, 1.f)), "XMMatrixTranslationFromVector(XMVectorSet(1.f, 2.f, 3.f, 1.f))");
+		// XMMatrixTranslation(1.f, 2.f, 3.f) :
+		// { 1, 0, 0, 0 }
+		// { 0, 1, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 1, 2, 3, 1 }
+		// XMMatrixTranslationFromVector(XMVectorSet(1.f, 2.f, 3.f, 1.f)) :
+		// { 1, 0, 0, 0 }
+		// { 0, 1, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 1, 2, 3, 1 }
+
+		// XMMATRIX XMMatrixScaling(float a, float b, float 3) returns Scaling matrix using a,b,c.
+		// XMMATRIX XMMatrixScalingFromVector(XMVECTOR offset) are same with above, but parameter is XMVECTOR.
+
+		Utils::PrintXMMatrix(XMMatrixScaling(1.f, 2.f, 3.f), "XMMatrixScaling(1.f, 2.f, 3.f)");
+		Utils::PrintXMMatrix(XMMatrixScalingFromVector(XMVectorSet(1.f, 2.f, 3.f, 1.f)), "XMMatrixScalingFromVector(XMVectorSet(1.f, 2.f, 3.f, 1.f))");
+		// XMMatrixScaling(1.f, 2.f, 3.f) :
+		// { 1, 0, 0, 0 }
+		// { 0, 2, 0, 0 }
+		// { 0, 0, 3, 0 }
+		// { 0, 0, 0, 1 }
+		// XMMatrixScalingFromVector(XMVectorSet(1.f, 2.f, 3.f, 1.f)) :
+		// { 1, 0, 0, 0 }
+		// { 0, 2, 0, 0 }
+		// { 0, 0, 3, 0 }
+		// { 0, 0, 0, 1 }
+
+		// XMMATRIX XMMatrixAffineTransformation(XMVECTOR scaling, XMVECTOR origin, XMVECTOR rotation, XMVECTOR translation) returns affine transform matrix(SRT)
+		Utils::PrintXMMatrix(XMMatrixAffineTransformation(XMVectorReplicate(2.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f)),
+			"XMMatrixAffineTransformation(XMVectorReplicate(2.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f))");
+		// XMMatrixAffineTransformation(XMVectorReplicate(2.f), XMVectorReplicate(0.f), XMVectorSet(XM_PI, XM_PIDIV2, XM_PIDIV4, 0.f), XMVectorSet(1.f, 2.f, 3.f, 1.f)) :
+		// { 1.1920929e-07, -1.4142134, -1.4142134, 0 }
+		// { -2.3841858e-07, -1.4142132, 1.4142134, 0 }
+		// { -1.9999998, 2.3841858e-07, 1.1920929e-07, 0 }
+		// { 1, 2, 3, 1 }
+
+		// XMMATRIX XMMatrixTransformation(XMVECTOR sOrigin, XMVECTOR qScale, XMVECTOR scaling, XMVECTOR rOrigin, XMVECTOR qRotation, XMVECTOR translation)
+		// sOrigin : center of scaling / qScale : direction of scaling / scaling : amount of scaling / rOrigin : center of rotation / qRotation : rotation quaternion / translation : amount of translation
+		// example skip : i cannot understand
+
+		// XMMATRIX XMMatrixDecompose(XMVECTOR *scaling, XMVECTOR *rotation, XMVECTOR* translation, XMMATRIX m)
+		// This Function decomposes m and return scaling, rotation, translation using output parameter
+		
+		XMMATRIX tr = XMMatrixAffineTransformation(XMVectorReplicate(2.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f));
+		XMVECTOR decScaling, decRotation, decTranslation;
+		XMMatrixDecompose(&decScaling, &decRotation, &decTranslation, tr);
+		Utils::PrintXMVector(decScaling, "Scaling decomposed from previous example matrix");
+		Utils::PrintXMVector(decRotation, "Rotation decomposed from previous example matrix");
+		Utils::PrintXMVector(decTranslation, "Translation decomposed from previous example matrix");
+		// Scaling decomposed from previous example matrix : { 1.9999998, 1.9999996, 1.9999998, 0 }
+		// Rotation decomposed from previous example matrix : { -0.65328145, 0.2705981, 0.65328145, -0.270598 }
+		// Translation decomposed from previous example matrix : { 1, 2, 3, 1 }
+
+
+		// XMMATRIX XMMatrixLookAtLH(XMVECTOR eye, XMVECTOR at, XMVECTOR up) returns view matrix in LHS system.
+		// XMMATRIX XMMatrixLookToLH(XMVECTOR eye, XMVECTOR at, XMVECTOR up) returns view matrix in LHS system. But 2nd parameter is direction of camera forward (originally at - eye is look vector)
+		// RHS system version is XMMatrixLookAtRH() / XMMatrixLookToRH()
+
+		XMVECTOR eye = XMVectorSet(0, 0, 0, 0);
+		XMVECTOR at = XMVectorSet(0, 1, 0, 0);
+		XMVECTOR up = XMVectorSet(0, 1, 0, 1);
+		Utils::PrintXMVector(eye, "eye");
+		Utils::PrintXMVector(at, "at");
+		Utils::PrintXMVector(up, "up");
+
+		Utils::PrintXMMatrix(XMMatrixLookAtLH(eye, at, up), "XMMatrixLookAtLH(eye, at, up)");
+		Utils::PrintXMMatrix(XMMatrixLookToLH(eye, XMVectorSubtract(at, eye), up), "XMMatrixLookToLH(eye, XMVectorSubtract(at, eye), up)");	// result will be same
+		// XMMatrixLookAtLH(eye, at, up) :
+		// { 0, 0, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 0, 0, 0, 0 }
+		// { 0, 0, 0, 1 }
+		// XMMatrixLookToLH(eye, XMVectorSubtract(at, eye), up) :
+		// { 0, 0, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 0, 0, 0, 0 }
+		// { 0, 0, 0, 1 }
+
+
+		// XMMATRIX XMMatrixPerspectiveFovLH(float fov, float aspect, float zn, float zf) returns projection matrix in LHS system.
+		// XMMATRIX XMMatrixPerspectiveLH(float w, float h, float zn, float zf) return projection matrix in LHS system. But parameters are diffrent.
+		// RHS system version is XMMatrixPerspectiveFovRH() / XMMatrixPerspectiveRH()
+		
+		Utils::PrintXMMatrix(XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100), "XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100)");
+		Utils::PrintXMMatrix(XMMatrixPerspectiveLH(1920, 1080, 10, 100), "XMMatrixPerspectiveLH(1920, 1080, 10, 100)");
+		// XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100) :
+		// { 0.6173732, 0, 0, 0 }
+		// { 0, 0.6173732, 0, 0 }
+		// { 0, 0, 1.1111112, 1 }
+		// { 0, 0, -11.111112, 0 }
+		// XMMatrixPerspectiveLH(1920, 1080, 10, 100) :
+		// { 0.010416667, 0, 0, 0 }
+		// { 0, 0.018518519, 0, 0 }
+		// { 0, 0, 1.1111112, 1 }
+		// { 0, 0, -11.111112, 0 }
+
+
+		// XMMATRIX XMMatrixReflect(XMVECTOR plane) returns reflection matrix with plane
+		// plane : normal is (a, b, c) and distance from origin is d -> we will see later
+
+		XMVECTOR plane = XMPlaneFromPointNormal(XMVectorSet(0.f, 0.f, 0.f, 1.f), XMVectorSet(1.f, 0.f, 0.f, 0.f));
+		Utils::PrintXMVector(plane, "XMPlaneFromPointNormal(XMVectorSet(0.f, 0.f, 0.f, 0.f), XMVectorSet(1.f, 0.f, 0.f, 0.f))");
+		// XMPlaneFromPointNormal(XMVectorSet(0.f, 0.f, 0.f, 0.f), XMVectorSet(1.f, 0.f, 0.f, 0.f)) : { 1, 0, 0, 0 }
+
+		// plane will be looks like :
+		// 
+		//     /|
+		//    / |
+		//   |  |
+		//   |  | ---> normal
+		//   |  |
+		//   |  |    â†–
+		//   |  /      â†–
+		//   | /         â†– {-1.f, 1.f, 0.f, 0.f } -> We will test this. Result expected as { 1.f, 1.f, 0.f, 0.f }
+		//   |/
+		//
+
+		Utils::PrintXMMatrix(XMMatrixReflect(plane), "XMMatrixReflect(plane)");
+		Utils::PrintXMVector(XMVector3Transform(XMVectorSet(-1.f, 1.f, 0.f, 0.f), XMMatrixReflect(plane)), "{ -1.f, 1.f, 0.f, 0.f } reflected");
+		// XMMatrixReflect(plane) :
+		// { -1, 0, 0, 0 }
+		// { 0, 1, 0, 0 }
+		// { 0, 0, 1, 0 }
+		// { 0, 0, 0, 1 }
+		// { -1.f, 1.f, 0.f, 0.f } reflected: { 1, 1, 0, 1 }
+
+
+		// XMMATRIX XMMatrixShadow(XMVECTOR plane, XMVECTOR light) returns result of light projected to plane (planar projection matrix)
+		// This one also called Shadow matrix.
+
+		XMVECTOR light = XMVectorSet(1.f, -1.f, 0.f, 0.f);
+		XMVECTOR plane2 = XMPlaneFromPointNormal(XMVectorReplicate(0.f), XMVectorSet(0.f, 1.f, 0.f, 0.f));
+		Utils::PrintXMVector(light, "light");
+		Utils::PrintXMVector(plane2, "XMPlaneFromPointNormal(XMVectorReplicate(0.f), XMVectorSet(0.f, 1.f, 0.f, 0.f))");
+
+		// What will be look like :
+		//
+		//   â†˜ light : { 1.f, -1.f, 0.f, 0.f }
+		//     â†˜
+		//       â†˜  â€¢ <- { 0.f, 2.f, 0.f, 1.f } -> let's project this to plane
+		//     ________________
+		//    /               /
+		//   /               /
+		//   ----------------
+		//
+
+		Utils::PrintXMMatrix(XMMatrixShadow(plane2, light), "XMMatrixShadow(plane2, light)");
+		Utils::PrintXMVector(XMVector3Transform(XMVectorSet(0.f, 2.f, 0.f, 1.f), XMMatrixShadow(plane2, light)), "XMVector3Transform(XMVectorSet(0.f, 2.f, 0.f, 1.f), XMMatrixShadow(plane2, light)");
+		// XMMatrixShadow(plane2, light) :
+		// { -1, 0, 0, 0 }
+		// { -1, 0, 0, 0 }
+		// { 0, 0, -1, 0 }
+		// { 0, 0, 0, -1 }
+		// XMVector3Transform(XMVectorSet(0.f, 2.f, 0.f, 1.f), XMMatrixShadow(plane2, light) : { -2, 0, 0, -1 }
+
+	}
+
+
+
+
 }
 
 
