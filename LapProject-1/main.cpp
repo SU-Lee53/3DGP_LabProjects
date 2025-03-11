@@ -844,6 +844,8 @@ void XM3DGraphicsFundametals()
 
 	// 6. Matrix Functions
 	{
+		std::println("6. Matrix Functions");
+
 		// This time, we will take a look about XMMATRIX functions.
 	
 		// XMMATRIX XMMatrixSet(float m00, ... float m33) initialze XMMATRIX by value.
@@ -1045,7 +1047,7 @@ void XM3DGraphicsFundametals()
 		// XMMATRIX XMMatrixPerspectiveFovLH(float fov, float aspect, float zn, float zf) returns projection matrix in LHS system.
 		// XMMATRIX XMMatrixPerspectiveLH(float w, float h, float zn, float zf) return projection matrix in LHS system. But parameters are diffrent.
 		// RHS system version is XMMatrixPerspectiveFovRH() / XMMatrixPerspectiveRH()
-		
+
 		Utils::PrintXMMatrix(XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100), "XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100)");
 		Utils::PrintXMMatrix(XMMatrixPerspectiveLH(1920, 1080, 10, 100), "XMMatrixPerspectiveLH(1920, 1080, 10, 100)");
 		// XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100) :
@@ -1120,7 +1122,106 @@ void XM3DGraphicsFundametals()
 
 	}
 
+	std::println();
+	
+	// 7. Plane Functions
+	{
+		std::println("7. Plane Functions");
 
+		// DirectXMath provides various functions about plane.
+		// Planes can be represented as ax + by + cz + d = 0. This mean point on the plane { x, y, z } satisfiy ax + by + cz + d = 0.
+		// { a, b, c } means normal vector of plane and d means distance from origin.
+		// So, planes can be represented as {a, b, c, d} 4D vector.
+
+		// To Create Plane, you can use this two functions.
+		// XMVECTOR XMPlaneFromPoints(XMVECTOR p0, XMVECTOR p1, XMVECTOR p2) creates plane using 3 points on the plane.
+		// XMVECTOR XMPlaneFromPointNormal(XMVECTOR p, XMVECTOR normal) creates plane using one point and normal vector.
+
+		XMVECTOR plane1 = XMPlaneFromPoints(XMVectorSet(1, 1, 1, 1), XMVectorSet(1, 2, 1, 1), XMVectorSet(3, 1, 2, 1));
+		XMVECTOR plane2 = XMPlaneFromPointNormal(XMVectorReplicate(1.f), XMVectorSet(1.f, 1.f, 1.f, 0.f));
+		Utils::PrintXMVector(plane1, "plane1 initialized : XMPlaneFromPoints(XMVectorSet(1, 1, 1, 1), XMVectorSet(1, 2, 1, 1), XMVectorSet(3, 1, 2, 1))");
+		Utils::PrintXMVector(plane2, "plane2 initialized : XMPlaneFromPointNormal(XMVectorReplicate(1.f), XMVectorSet(1.f, 1.f, 1.f, 0.f))");
+		// plane1 initialized : XMPlaneFromPoints(XMVectorSet(1, 1, 1, 1), XMVectorSet(1, 2, 1, 1), XMVectorSet(3, 1, 2, 1)) : { 0.4472136, 0, -0.8944272, 0.4472136 }
+		// plane2 initialized : XMPlaneFromPointNormal(XMVectorReplicate(1.f), XMVectorSet(1.f, 1.f, 1.f, 0.f)) : { 1, 1, 1, -3 }
+		
+
+		// XMVECTOR XMPlaneNormalize(XMVECTOR p) retruns normalized p.
+		// This will set length of normal to 1.
+		// Est version also available. (XMPlaneNormalizeEst())
+		Utils::PrintXMVector(XMPlaneNormalize(plane2), "XMPlaneNormalize(plane2)");			// XMPlaneNormalize(plane2) : { 0.57735026, 0.57735026, 0.57735026, -1.7320509 }
+		Utils::PrintXMVector(XMPlaneNormalizeEst(plane2), "XMPlaneNormalizeEst(plane2)");	// XMPlaneNormalizeEst(plane2) : { 0.5772705, 0.5772705, 0.5772705, -1.7318115 }
+
+		// XMVECTOR XMPlaneDot(XMVECTOR p, XMVECTOR v) returns result of dot(p, v).
+		// This related to location between point v { vx, vy, vz, vw } and plane p.
+		// CAUTION: USE THIS WHEN v IS 4D VECTOR.
+		Utils::PrintXMVector(XMPlaneDot(plane2, XMVectorReplicate(2.f)), "XMPlaneDot(plane2, XMVectorReplicate(2.f))"); // XMPlaneDot(plane2, XMVectorReplicate(2.f)) : { 0, 0, 0, 0 } -> point v is placed over the plane.
+
+		// XMVECTOR XMPlaneDotCoord(XMVECTOR p, XMVECTOR v) returns of dot(p, v).
+		// Diffrence is v is 3D vector { vx, vy, vz, 1 }. -> v means position vector.
+		// if p is normalized, avx + avy + avz + d means shortest distance(vertical) between v and p.
+		Utils::PrintXMVector(XMPlaneDotCoord(XMPlaneNormalize(plane2), XMVectorSet(2.f, 2.f, 2.f, 1.f)), "XMPlaneDotCoord(XMPlaneNormalize(plane2), XMVectorSet(2.f, 2.f, 2.f, 1.f))");
+		// XMPlaneDotCoord(XMPlaneNormalize(plane2), XMVectorSet(2.f, 2.f, 2.f, 1.f)) : { 1.7320507, 1.7320507, 1.7320507, 1.7320507 }
+
+		// XMVECTOR XMPlaneDotNormal(XMVECTOR p, XMVECTOR v) returns result of dot(p, v).
+		// This time, v is { vx, vy, vz, 0 }. -> v means direction vector.
+		// Result will represent cos value of angles that v and p's normal vector makes.
+		Utils::PrintXMVector(XMPlaneDotNormal(XMPlaneNormalize(plane2), XMVectorSet(2.f, 2.f, 2.f, 0.f)), "XMPlaneDotNormal(XMPlaneNormalize(plane2), XMVectorSet(2.f, 2.f, 2.f, 0.f)");
+		// XMPlaneDotNormal(XMPlaneNormalize(plane2), XMVectorSet(2.f, 2.f, 2.f, 0.f) : { 3.4641016, 3.4641016, 3.4641016, 3.4641016 }
+
+		// XMVECTOR XMPlaneDotNormal(XMVECTOR p, XMMATRIX m) transforms p using transform matrix m.
+		Utils::PrintXMVector(XMPlaneTransform(plane2, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMVectorReplicate(XM_PIDIV4), XMVectorReplicate(5.f))), "XMPlaneTransform(plane2, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMVectorReplicate(XM_PIDIV4), XMVectorReplicate(5.f)))");
+		// XMPlaneTransform(plane2, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMVectorReplicate(XM_PIDIV4), XMVectorReplicate(5.f))) : { -14, -14, -14, -3 }
+		// rotate 45 degree by each axis, translate 5.f by each axis.
+
+		// XMVECTOR XMPlaneIntersectLine(XMVECTOR p, XMVECTOR p1, XMVECTOR p2) checks if plane p intersects with line this passes p1 and p2.
+		// if line and plane is parallel, returns { QNaN, QNaN, QNaN, QNaN }
+		Utils::PrintXMVector(XMPlaneIntersectLine(plane2, XMVectorReplicate(0.f), XMVectorReplicate(5.f)), "XMPlaneIntersectLine(plane2, XMVectorReplicate(0.f), XMVectorReplicate(5.f))");
+		// XMPlaneIntersectLine(plane2, XMVectorReplicate(0.f), XMVectorReplicate(5.f)) : { 1, 1, 1, 1 }
+
+		// Let's look when result is parallel
+		XMVECTOR plane3 = XMPlaneFromPointNormal(XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 0));
+		XMVECTOR parallelP1 = XMVectorSet(0, 1, 0, 0);
+		XMVECTOR parallelP2 = XMVectorSet(1, 1, 0, 0);
+		Utils::PrintXMVector(XMPlaneIntersectLine(plane3, parallelP1, parallelP2), "Return when parallel");	// Return when parallel : { nan, nan, nan, nan }
+
+		/*
+	            parallelP1   parallelP2
+		            •           •             y  z
+		       /---------------------/        | /
+		      /       plane3        /         |/
+             /---------------------/          |------x
+		*/
+
+
+		// void XMPlaneIntersectPlane(XMVECTOR* pLP1, XMVECTOR pLP2, XMVECTOR p1, XMVECTOR p2)
+		// This functions checks if plane p1 and p2 are intersected
+		// intersectd points will create line. pLP1 and pLP2 will return this line as output parameters.
+		// If p1 and p2 is parallel, pLP1 and pLP2 will return { NaN, NaN, NaN, NaN }.
+
+		XMVECTOR cp1{}, cp2{};
+		XMPlaneIntersectPlane(&cp1, &cp2, plane1, plane2);
+		Utils::PrintXMVector(cp1, "p1 of intersected line between plane1 & plane2");
+		Utils::PrintXMVector(cp2, "p2 of intersected line between plane1 & plane2");
+		// p1 of intersected line between plane1& plane2 : { 0.99999994, 0.99999994, 0.99999994, 0 }
+		// p2 of intersected line between plane1& plane2 : { 0.10557276, 2.3416407, 0.55278635, 0 }
+
+
+		// Let's look when result is parallel
+		XMVECTOR plane4 = XMPlaneFromPointNormal(XMVectorSet(0, 1, 0, 1), XMVectorSet(0, 1, 0, 0));
+		XMPlaneIntersectPlane(&cp1, &cp2, plane3, plane4);
+		Utils::PrintXMVector(cp1, "p1 when parallel");	// p1 when parallel : { nan, nan, nan, nan }
+		Utils::PrintXMVector(cp2, "p2 when parallel");	// p2 when parallel : { nan, nan, nan, nan }
+
+
+		// Functions below are plane comparison functions.
+		// Explain when something special.
+
+		// bool XMPlaneEqual(XMVECTOR p1, XMVECTOR p2)
+		// bool XMPlaneNearEqual(XMVECTOR p1, XMVECTOR p2, XMVECTOR epsilon) -> This is almost same as other ...NearEqual() functions.
+		// bool XMPlaneNorEqual(XMVECTOR p1, XMVECTOR p2)
+		// bool XMPlaneIsInfinite(XMVECTOR p) -> returns true if any of elenents are inf
+		// bool XMPlaneIsNaN(XMVECTOR p) -> returns true if any of elements are NaN
+	}
 
 
 }
