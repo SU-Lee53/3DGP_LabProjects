@@ -1449,6 +1449,233 @@ void XMCollisionDetections()
 		Utils::PrintBoundingFrustum(f3, "transformed f3");
 	}
 
+	std::println();
+
+	// 5. Use of Bounding objects
+	{
+		// 0. Return values of collision detections.
+		{
+			// There are two types of collision detection functions : 1. ContainedBy() | 2. Intersects()
+
+			// ContainedBy() types functions returns ContainmentType type.
+			// This enum type are declared in DirectXCollision.h header file.
+			// 
+			//	enum ContainmentType
+			//	{
+			//		DISJOINT = 0,
+			//		INTERSECTS = 1,
+			//		CONTAINS = 2
+			//	};
+			// DISJOINT means there are no intersection between two bounding objects.
+			// INTERSECTS means two objects are intersected(not contained)
+			// CONTAINS means one bounding object contains other objects completly.
+
+
+			// Intersects() types functions returns PlaneIntersection type.
+			// This enum type are also declared in DirectXCollision.h header file.
+			//	enum PlaneIntersectionType
+			//	{
+			//		FRONT = 0,
+			//		INTERSECTING = 1,
+			//		BACK = 2
+			//	};
+			// FRONT means bounding object is located in front of plane.
+			// INTERSECTING means bounding object and plane is intersected.
+			// BACK means bounding object is located behind of plane.
+			// FRONT and BACK is determined by planes normal.
+			
+		}
+
+		// 1. Triangle Test
+		{
+			// DirectXMath provides Triangle test functions that check intersection between triangle and bounding objects.
+			// We can use this in more precise collision detection algorithms.
+			// TriangleTest functions are declared in "TriangleTests" namespace.
+			using namespace TriangleTests;
+
+			// ContainedBy(XMVECTOR V0, FXMVECTOR V1, FXMVECTOR V2, GXMVECTOR Plane0, HXMVECTOR Plane1, HXMVECTOR Plane2, CXMVECTOR Plane3, CXMVECTOR Plane4, CXMVECTOR Plane5) 
+			// This functions checks if triangle(three XMFLOAT3) is contained by Bounding object composed by given planes.
+			// Mostly used for check with BoundingFrustum and triangles.
+
+			BoundingFrustum frustum{ XMMatrixPerspectiveFovLH(90.f, 800 / 600, 10, 100) };
+			std::array<XMVECTOR, 3> triangle{
+				 XMVectorSet(-1.f, -1.f, 10.f, 1.f),
+				 XMVectorSet(1.f, -1.f, 10.f, 1.f),
+				 XMVectorSet(0.f, 1.f, 10.f, 1.f)
+			};
+
+			std::array<XMVECTOR, 6> planes;
+			frustum.GetPlanes(&planes[0], &planes[1], &planes[2], &planes[3], &planes[4], &planes[5]);
+
+			Utils::PrintBoundingFrustum(frustum, "");
+			Utils::PrintContainResult(TriangleTests::ContainedBy(triangle[0], triangle[1], triangle[2], planes[0], planes[1], planes[2], planes[3], planes[4], planes[5]));	// CONTAINS
+			std::println();
+
+			// Intersects(XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, XMVECTOR plane) checks intersection between certain triangle and plane.
+
+			for (auto plane : planes)
+			{
+				Utils::PrintPlaneIntersectionResult(TriangleTests::Intersects(triangle[0], triangle[1], triangle[2], plane));
+				std::println();
+				/*
+					BACK
+					BACK
+					BACK
+					BACK
+					BACK
+					BACK
+				*/
+			}
+
+			// There's more Intersects() functions are available
+
+			// bool Intersects(XMVECTOR origin, XMVECTOR direction, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float& distance)
+			// This function checks intersection between triangle and ray(start from origin, ray towards direction)
+			// distance means distance between ray's origin to intersected point.
+			struct Ray { XMFLOAT3 origin; XMFLOAT3 direction; };
+			Ray r{ XMFLOAT3{0,0,0}, XMFLOAT3{0,0,1} };
+			float distance{};
+			bool bRayCasted = TriangleTests::Intersects(XMLoadFloat3(&r.origin), XMLoadFloat3(&r.direction), triangle[0], triangle[1], triangle[2], distance);
+			std::println("ray casted result : {} | distance : {}", bRayCasted ? "TRUE" : "FALSE", distance);	// ray casted result : TRUE | distance : 10
+
+			// bool Intersects(XMVECTOR a0, XMVECTOR a1, XMVECTOR a2, XMVECTOR b0, XMVECTOR b1, XMVECTOR b2)
+			// This function checks intersection between two triangles.
+
+			std::array<XMVECTOR, 3> triangle2{
+				XMVectorAdd(triangle[0], XMVectorSet(0.f, 0.f, 2.f, 0.f)),
+				XMVectorAdd(triangle[1], XMVectorSet(0.f, 0.f, 2.f, 0.f)),
+				XMVectorAdd(triangle[2], XMVectorSet(0.f, 0.f, -2.f, 0.f)),
+			};
+
+			bool bTriangleIntersected = TriangleTests::Intersects(triangle[0], triangle[1], triangle[2], triangle2[0], triangle2[1], triangle2[2]);
+			std::println("Triangles intersection : {}", bTriangleIntersected ? "TRUE" : "FALSE");	// Triangles intersection : TRUE
+		}
+
+		std::println();
+
+		// 2. Check intersection between bounding objects
+		{
+			// Every bounding objects has ContainedBy(), Contains() and Intersects() functions.
+			// All of this functions are overloaded for every other types of bounding objects each.
+
+			// ContainedBy() function checks if objects is contained by 6 planes.
+			// Contains() functions checks caller objects contains others.
+			// Intersects() functions checks intersections between two objects. -> Only vs Plane funtion returns PlaneIntersectionType.
+
+			// Like this
+			BoundingBox aabb{ XMFLOAT3{0,0,0}, XMFLOAT3{1,1,1} };
+			XMFLOAT4 orientation;
+			XMStoreFloat4(&orientation, XMQuaternionRotationRollPitchYaw(0.f, 0.f, 0.f));
+			BoundingOrientedBox obb{ XMFLOAT3{0,0,0}, XMFLOAT3{1,1,1}, orientation };
+			BoundingSphere sphere{ XMFLOAT3{0,0,0}, 1.f };
+			BoundingFrustum frustum{ XMMatrixPerspectiveFovLH(90, 800 / 600, 1, 100) };
+			std::array<XMVECTOR, 3> triangle{
+				 XMVectorSet(-1.f, -1.f, 1.f, 1.f),
+				 XMVectorSet(1.f, -1.f, 1.f, 1.f),
+				 XMVectorSet(0.f, 1.f, 1.f, 1.f)
+			};
+			struct Ray { XMFLOAT3 origin; XMFLOAT3 direction; };
+			Ray ray{ XMFLOAT3{0,0,0}, XMFLOAT3{0,0,1} };
+			float dist{};
+
+			std::array<XMVECTOR, 6> frustumPlanes;
+			frustum.GetPlanes(&frustumPlanes[0], &frustumPlanes[1], &frustumPlanes[2], &frustumPlanes[3], &frustumPlanes[4], &frustumPlanes[5]);
+
+			// ContainedBy
+			Utils::PrintContainResult(aabb.ContainedBy(frustumPlanes[0], frustumPlanes[1], frustumPlanes[2], frustumPlanes[3], frustumPlanes[4], frustumPlanes[5])); std::println();
+
+			// Contains (6)
+			Utils::PrintContainResult(aabb.Contains(aabb)); std::println();										// BoundingBox vs BoundingBox
+			Utils::PrintContainResult(aabb.Contains(obb)); std::println();										// BoundingBox vs BoundingOrientedBox
+			Utils::PrintContainResult(aabb.Contains(sphere)); std::println();									// BoundingBox vs BoundingSphere
+			Utils::PrintContainResult(aabb.Contains(frustum)); std::println();									// BoundingBox vs BoundingFrustum
+			Utils::PrintContainResult(aabb.Contains(triangle[0], triangle[1], triangle[2])); std::println();	// BoundingBox vs Triangle
+			Utils::PrintContainResult(aabb.Contains(XMVectorSet(0, 0, 0, 1))); std::println();					// BoundingBox vs Point
+
+			// Intersects (7)
+			std::println("vs aabb : {}", aabb.Intersects(aabb) ? "TRUE" : "FALSE");																// BoundingBox vs BoundingBox
+			std::println("vs obb : {}", aabb.Intersects(obb) ? "TRUE" : "FALSE");																// BoundingBox vs BoundingOrientedBox
+			std::println("vs sphere : {}", aabb.Intersects(sphere) ? "TRUE" : "FALSE");															// BoundingBox vs BoundingSphere
+			std::println("vs frustum : {}", aabb.Intersects(frustum) ? "TRUE" : "FALSE");														// BoundingBox vs BoundingFrustum
+			std::println("vs triangle : {}", aabb.Intersects(triangle[0], triangle[1], triangle[2]) ? "TRUE" : "FALSE");						// BoundingBox vs Triangle
+			std::println("vs ray : {}", aabb.Intersects(XMLoadFloat3(&ray.origin), XMLoadFloat3(&ray.direction), dist) ? "TRUE" : "FALSE");		// BoundingBox vs Ray
+			Utils::PrintPlaneIntersectionResult(aabb.Intersects(XMPlaneFromPointNormal(XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 0))));		// BoundingBox vs Plane
+
+			// Every Bounding Objects has SAME functions.
+
+			// BoundingOrientedBox
+			{
+				// ContainedBy
+				obb.ContainedBy(frustumPlanes[0], frustumPlanes[1], frustumPlanes[2], frustumPlanes[3], frustumPlanes[4], frustumPlanes[5]);
+
+				// Contains
+				obb.Contains(aabb);										// BoundingOrientedBox vs BoundingBox
+				obb.Contains(obb);										// BoundingOrientedBox vs BoundingOrientedBox
+				obb.Contains(sphere);									// BoundingOrientedBox vs BoundingSphere
+				obb.Contains(frustum);									// BoundingOrientedBox vs BoundingFrustum
+				obb.Contains(triangle[0], triangle[1], triangle[2]);	// BoundingOrientedBox vs Triangle
+				obb.Contains(XMVectorSet(0, 0, 0, 1));					// BoundingOrientedBox vs Point
+
+				// Intersects
+				obb.Intersects(aabb);																		// BoundingOrientedBox vs BoundingBox
+				obb.Intersects(obb);																		// BoundingOrientedBox vs BoundingOrientedBox
+				obb.Intersects(sphere);																		// BoundingOrientedBox vs BoundingSphere
+				obb.Intersects(frustum);																	// BoundingOrientedBox vs BoundingFrustum
+				obb.Intersects(triangle[0], triangle[1], triangle[2]);										// BoundingOrientedBox vs Triangle
+				obb.Intersects(XMLoadFloat3(&ray.origin), XMLoadFloat3(&ray.direction), dist);				// BoundingOrientedBox vs Ray
+				obb.Intersects(XMPlaneFromPointNormal(XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 0)));	// BoundingOrientedBox vs Plane
+			}
+			
+			// BoundingSphere
+			{
+				// ContainedBy
+				sphere.ContainedBy(frustumPlanes[0], frustumPlanes[1], frustumPlanes[2], frustumPlanes[3], frustumPlanes[4], frustumPlanes[5]);
+
+				// Contains
+				sphere.Contains(aabb);										// BoundingSphere vs BoundingBox
+				sphere.Contains(obb);										// BoundingSphere vs BoundingOrientedBox
+				sphere.Contains(sphere);									// BoundingSphere vs BoundingSphere
+				sphere.Contains(frustum);									// BoundingSphere vs BoundingFrustum
+				sphere.Contains(triangle[0], triangle[1], triangle[2]);		// BoundingSphere vs Triangle
+				sphere.Contains(XMVectorSet(0, 0, 0, 1));					// BoundingSphere vs Point
+
+				// Intersects
+				sphere.Intersects(aabb);																		// BoundingSphere vs BoundingBox
+				sphere.Intersects(obb);																			// BoundingSphere vs BoundingOrientedBox
+				sphere.Intersects(sphere);																		// BoundingSphere vs BoundingSphere
+				sphere.Intersects(frustum);																		// BoundingSphere vs BoundingFrustum
+				sphere.Intersects(triangle[0], triangle[1], triangle[2]);										// BoundingSphere vs Triangle
+				sphere.Intersects(XMLoadFloat3(&ray.origin), XMLoadFloat3(&ray.direction), dist);				// BoundingSphere vs Ray
+				sphere.Intersects(XMPlaneFromPointNormal(XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 0)));	// BoundingSphere vs Plane
+			}
+
+			// BoundingSphere
+			{
+				// ContainedBy
+				frustum.ContainedBy(frustumPlanes[0], frustumPlanes[1], frustumPlanes[2], frustumPlanes[3], frustumPlanes[4], frustumPlanes[5]);
+
+				// Contains
+				frustum.Contains(aabb);										// BoundingFrustum vs BoundingBox
+				frustum.Contains(obb);										// BoundingFrustum vs BoundingOrientedBox
+				frustum.Contains(sphere);									// BoundingFrustum vs BoundingSphere
+				frustum.Contains(frustum);									// BoundingFrustum vs BoundingFrustum
+				frustum.Contains(triangle[0], triangle[1], triangle[2]);	// BoundingFrustum vs Triangle
+				frustum.Contains(XMVectorSet(0, 0, 0, 1));					// BoundingFrustum vs Point
+
+				// Intersects
+				frustum.Intersects(aabb);																		// BoundingFrustum vs BoundingBox
+				frustum.Intersects(obb);																		// BoundingFrustum vs BoundingOrientedBox
+				frustum.Intersects(sphere);																		// BoundingFrustum vs BoundingSphere
+				frustum.Intersects(frustum);																	// BoundingFrustum vs BoundingFrustum
+				frustum.Intersects(triangle[0], triangle[1], triangle[2]);										// BoundingFrustum vs Triangle
+				frustum.Intersects(XMLoadFloat3(&ray.origin), XMLoadFloat3(&ray.direction), dist);				// BoundingFrustum vs Ray
+				frustum.Intersects(XMPlaneFromPointNormal(XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 0)));	// BoundingFrustum vs Plane
+			}
+			
+
+		}
+
+	}
 
 }
 

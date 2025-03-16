@@ -7,6 +7,8 @@
 #include <ranges>	
 #include <string>
 
+using namespace std::string_literals;
+
 class Utils
 {
 public:
@@ -61,6 +63,26 @@ public:
 		std::println("TopSlope : {}", b.TopSlope);
 		std::println("BottomSlope : {}", b.BottomSlope);
 		std::println("CORNER_COUNT : {}", b.CORNER_COUNT);
+	}
+
+	static void PrintContainResult(const DirectX::ContainmentType& t)
+	{
+		std::string out{};
+		if (t == ContainmentType::DISJOINT) out = "DISJOINT"s;
+		else if (t == ContainmentType::CONTAINS) out = "CONTAINS"s;
+		else if (t == ContainmentType::INTERSECTS) out = "INTERSECTS"s;
+
+		std::print("{}", out);
+	}
+
+	static void PrintPlaneIntersectionResult(const DirectX::PlaneIntersectionType& t)
+	{
+		std::string out{};
+		if (t == PlaneIntersectionType::FRONT) out = "FRONT"s;
+		else if (t == PlaneIntersectionType::INTERSECTING) out = "INTERSECTING"s;
+		else if (t == PlaneIntersectionType::BACK) out = "BACK"s;
+
+		std::print("{}", out);
 	}
 
 };
