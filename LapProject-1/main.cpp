@@ -1226,6 +1226,231 @@ void XM3DGraphicsFundametals()
 
 }
 
+void XMCollisionDetections()
+{
+	BoundingBox;
+	BoundingOrientedBox; 
+	BoundingSphere;
+	BoundingFrustum;
+
+	// These four structs above are bounding objects provided by DirectXMath
+	
+	// 1. BoundingBox 
+	{
+		// BoundingBox is well known as AABB(Axis-Alligned Bounding Box). 
+		// Member datas contains center(XMFLOAT3), extents(XMFLOAT3) and CORNER_COUNT(size_t)
+		// BoundingBox::extents means diagnoal point from center. This also means size of boundingbox.
+
+		// To create BoundingBox, We can use both constructor and Initialization functions.
+		// Constructor of BoundingBox receives position of center(as XMFLOAT3) and extents(as XMFLOAT3)
+
+		// Example mesh of cube.
+		std::vector<XMFLOAT3> points = {
+			XMFLOAT3{1.f,	1.f,	1.f},
+			XMFLOAT3{1.f,	-1.f,	1.f},
+			XMFLOAT3{-1.f,	1.f,	1.f},
+			XMFLOAT3{-1.f,	-1.f,	1.f},
+			XMFLOAT3{1.f,	1.f,	-1.f},
+			XMFLOAT3{1.f,	-1.f,	-1.f},
+			XMFLOAT3{-1.f,	1.f,	-1.f},
+			XMFLOAT3{-1.f,	-1.f,	-1.f},
+		};
+
+		BoundingBox aabb2, aabb3, aabb4, aabb5;
+
+		BoundingBox aabb1{ XMFLOAT3{0.f, 0.f, 0.f}, XMFLOAT3{1.f, 1.f, 1.f} };
+		Utils::PrintBoundingBox(aabb1, "aabb1");
+
+		// There are 4 types of BoundingBox initialization functions.
+		// This version of CreateFromPoints() creates BoundingBox using min point and max point of target BoundingBox.
+		BoundingBox::CreateFromPoints(aabb2, XMVectorReplicate(-1.f), XMVectorReplicate(1.f));
+		Utils::PrintBoundingBox(aabb2, "aabb2");
+
+		// This version of CreateFromPoints() creates BoundingBox using array of mesh's position.
+		BoundingBox::CreateFromPoints(aabb3, points.size(), points.data(), sizeof(XMFLOAT3));
+		Utils::PrintBoundingBox(aabb3, "aabb3");
+
+		// CreateFromSphere() Creates cricumscribed BoundingBox of certain BoundingSphere.
+		BoundingBox::CreateFromSphere(aabb4, BoundingSphere{ XMFLOAT3{5.f, 5.f, 5.f}, 1.f });
+		Utils::PrintBoundingBox(aabb4, "aabb4");
+
+		// CreateMerged() merges 2 BoundingBoxes.
+		BoundingBox::CreateMerged(aabb5, aabb3, aabb4);
+		Utils::PrintBoundingBox(aabb5, "aabb5");
+
+		// GetCorners(XMFLOAT3* pCorners) returns positions of corners by output parameter.
+		std::vector<XMFLOAT3> corners(8);
+		aabb5.GetCorners(corners.data());
+		std::println("aabb5's corners");
+		for (const auto [i, p] : corners | std::views::enumerate) std::println("{} : {{ {}, {}, {} }}", i, p.x, p.y, p.z);
+
+		// There are 2 types of transfrom functions.
+		// void Transform(BoundingBox& out, XMMATRIX m) transforms BoundingBox using transform matrix.
+		// For most cases, m will be world transfromation matrix which transforms local space to world space.
+		aabb1.Transform(aabb1, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f)));
+		Utils::PrintBoundingBox(aabb1, "transformed aabb1");
+
+		// void Transform(BoundingBox& out, float scale, XMVECTOR rotation, XMVECTOR translation) transforms BoundingBox using given transfrom parameters.
+		aabb2.Transform(aabb2, 1.f, XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f));
+		Utils::PrintBoundingBox(aabb2, "transformed aabb2");
+
+	}
+
+	std::println();
+
+	// 2. BoundingOrientedBox
+	{
+		// BoundingOrientedBox is well known as OBB(Oriented Bounding Box). Which is has own oriented direction by each objects.
+		// Member data has Center(XMFLOAT3), Extents(XMFLOAT3), Orientation(XMFLOAT4 quaternion), CORNER_COUNT.
+
+		// To create BoundingOrientedBox, We can use both constructor and Initialization functions.
+		// Constructor of BoundingBox receives position of center(as XMFLOAT3), extents(as XMFLOAT3) and orientation(as XMFLOAT4)
+		
+		XMFLOAT4 orientation;
+		XMStoreFloat4(&orientation, XMQuaternionRotationRollPitchYaw(0.f, 0.f, 0.f));
+		BoundingOrientedBox obb1{ XMFLOAT3(0,0,0), XMFLOAT3(1,1,1), orientation };
+		Utils::PrintBoundingOrientedBox(obb1, "obb1");
+
+		// Example mesh of cube.
+		std::vector<XMFLOAT3> points = {
+			XMFLOAT3{1.f,	1.f,	1.f},
+			XMFLOAT3{1.f,	-1.f,	1.f},
+			XMFLOAT3{-1.f,	1.f,	1.f},
+			XMFLOAT3{-1.f,	-1.f,	1.f},
+			XMFLOAT3{1.f,	1.f,	-1.f},
+			XMFLOAT3{1.f,	-1.f,	-1.f},
+			XMFLOAT3{-1.f,	1.f,	-1.f},
+			XMFLOAT3{-1.f,	-1.f,	-1.f},
+		};
+
+		BoundingOrientedBox obb2{}, obb3{};
+		// There are 2 types of BoundingBox initialization functions.
+
+		// CreateFromPoints() creates OBB using mesh vertices data.
+		BoundingOrientedBox::CreateFromPoints(obb2, points.size(), points.data(), sizeof(XMFLOAT3));
+		Utils::PrintBoundingOrientedBox(obb2, "obb2");
+
+		// CreateFromBoundingBox() creates OBB from BoundingBox object.
+		BoundingOrientedBox::CreateFromBoundingBox(obb3, BoundingBox{ XMFLOAT3{0,0,0}, XMFLOAT3{1,1,1} });
+		Utils::PrintBoundingOrientedBox(obb3, "obb3");
+
+		// GetCorners(XMFLOAT3* pCorners) returns positions of corners by output parameter.
+		std::vector<XMFLOAT3> corners(8);
+		obb2.GetCorners(corners.data());
+		std::println("obb2's corners");
+		for (const auto [i, p] : corners | std::views::enumerate) std::println("{} : {{ {}, {}, {} }}", i, p.x, p.y, p.z);
+
+		// Transform functions are same as BoundingBox's transform functions.
+		// void Transform(BoundingBox& out, XMMATRIX m) transforms BoundingBox using transform matrix.
+		// For most cases, m will be world transfromation matrix which transforms local space to world space.
+		obb1.Transform(obb1, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f)));
+		Utils::PrintBoundingOrientedBox(obb1, "transformed obb1");
+
+		// void Transform(BoundingBox& out, float scale, XMVECTOR rotation, XMVECTOR translation) transforms BoundingBox using given transfrom parameters.
+		obb3.Transform(obb3, 1.f, XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f));
+		Utils::PrintBoundingOrientedBox(obb3, "transformed obb3");
+
+	}
+
+	std::println();
+
+	// 3. BoundingSphere
+	{
+		// Bounding sphere is Bounding object which is cricumscribes objects using sphere.
+		// Member datas contains center(XMFLOAT3) and radius(float)
+
+		// Constructor of BoundingSphere is receives center and radius as parameters
+		BoundingSphere sp1{ XMFLOAT3{0.f, 0.f, 0.f}, 1.f };
+		Utils::PrintBoundingSphere(sp1, "sp1");
+
+		// Example mesh of cube.
+		std::vector<XMFLOAT3> points = {
+			XMFLOAT3{1.f,	1.f,	1.f},
+			XMFLOAT3{1.f,	-1.f,	1.f},
+			XMFLOAT3{-1.f,	1.f,	1.f},
+			XMFLOAT3{-1.f,	-1.f,	1.f},
+			XMFLOAT3{1.f,	1.f,	-1.f},
+			XMFLOAT3{1.f,	-1.f,	-1.f},
+			XMFLOAT3{-1.f,	1.f,	-1.f},
+			XMFLOAT3{-1.f,	-1.f,	-1.f},
+		};
+
+		BoundingSphere sp2{}, sp3{}, sp4{}, sp5{};
+
+		// CreateFromPoints() creates BoundingSphere using mesh vertices data.
+		BoundingSphere::CreateFromPoints(sp2, points.size(), points.data(), sizeof(XMFLOAT3));
+		Utils::PrintBoundingSphere(sp2, "sp2");
+
+		// CreateFromBoundingBox() creates BoundingSphere from BoundingfOrientedBox.
+		XMFLOAT4 orientation;
+		XMStoreFloat4(&orientation, XMQuaternionRotationRollPitchYaw(0.f, 0.f, 0.f));
+		BoundingSphere::CreateFromBoundingBox(sp3, BoundingOrientedBox{ XMFLOAT3{0.f, 0.f, 0.f}, XMFLOAT3{1.f, 1.f, 1.f}, orientation });
+		Utils::PrintBoundingSphere(sp3, "sp3");
+		
+		// CreateFromFrustum() creates BoundingSphere from BoundingFrustum.
+		BoundingSphere::CreateFromFrustum(sp4, BoundingFrustum{ XMMatrixPerspectiveFovLH(90, 1920 / 1080, 10, 100) });
+		Utils::PrintBoundingSphere(sp4, "sp4");
+
+		// CreateMerged() merges two BoundingSpheres.
+		// Created BoundingSphere will contains two merged BoundingSpheres.
+		BoundingSphere::CreateMerged(sp5, sp1, sp4);
+		Utils::PrintBoundingSphere(sp5, "sp5");
+
+
+		// Transfrom Functions are same as BoundingBox and BoundingOrientedBox.
+		//Therefore, detailed explanation will skip.
+		sp1.Transform(sp1, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f)));
+		Utils::PrintBoundingSphere(sp1, "transformed sp1");
+
+		sp3.Transform(sp3, 1.f, XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f));
+		Utils::PrintBoundingSphere(sp3, "transformed sp3");
+	}
+
+	std::println();
+
+	// 4. BoundingFrustum
+	{
+		// BoundingFrustum represents frustum bounding objects.
+		// Therefore, BoundingFrustum is mostly used for camera frustum.
+		// Members of BoundingFrustum is :
+		// Origin(XMFLOAT3)
+		// Orientation(XMFLOAT4)
+		// Near, Far, LeftSlope, RightSlope, TopSlope, BottomSlope(float)
+		// CORNER_COUNT(size_t)
+
+		// BoundingFrustum has 2 constructors.
+
+		// BoundingFrustum(XMMATRIX Projection, bool rhcoords = false)
+		BoundingFrustum f1{ XMMatrixPerspectiveFovLH(90, /* (width / height) */ 800 / 600, 10, 100), false };
+		Utils::PrintBoundingFrustum(f1, "f1");
+
+		// BoundingFrustum(XMFLOAT3& origin, XMFLOAT4 orientation, float RightSlope, float LeftSlope, float TopSlope, float BottomSlope, float nearPlane, float farPlane)
+		BoundingFrustum f2{ XMFLOAT3{0,0,0}, XMFLOAT4{0,0,0,0}, 1.5, -1.5, 1.5f, -1.5f, 10, 100};
+		Utils::PrintBoundingFrustum(f2, "f2");
+
+		// Bounding Frustum has one Initializize Functions
+		// void CreateFromMatrix(BoundingFrustum& out, XMMATRIX Projection, bool rhcoords = false)
+		// This creates BoundingFrustum from projection matrix. We can also configure coordiante system(RHS <-> LHS).
+		BoundingFrustum f3{};
+		BoundingFrustum::CreateFromMatrix(f3, XMMatrixOrthographicLH(800, 600, 10, 100), false);
+		Utils::PrintBoundingFrustum(f3, "f3");
+
+		// GetCorners(XMFLOAT3* pCorners) returns positions of corners by output parameter.
+		std::vector<XMFLOAT3> corners(8);
+		f1.GetCorners(corners.data());
+		std::println("f1's corners");
+		for (const auto [i, p] : corners | std::views::enumerate) std::println("{} : {{ {}, {}, {} }}", i, p.x, p.y, p.z);
+
+		// Transform Functions are same.
+		f1.Transform(f1, XMMatrixAffineTransformation(XMVectorReplicate(1.f), XMVectorReplicate(0.f), XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f)));
+		Utils::PrintBoundingFrustum(f1, "transformed f1");
+
+		f3.Transform(f3, 1.f, XMQuaternionRotationRollPitchYaw(XM_PI, XM_PIDIV2, XM_PIDIV4), XMVectorSet(1.f, 2.f, 3.f, 1.f));
+		Utils::PrintBoundingFrustum(f3, "transformed f3");
+	}
+
+
+}
 
 int main()
 {
@@ -1237,8 +1462,9 @@ int main()
 	//XMBasics();
 
 	// 2. 3D Graphics Fundamentals
-	XM3DGraphicsFundametals();
+	//XM3DGraphicsFundametals();
 
-
+	// 3. Collision Detection
+	XMCollisionDetections();
 
 }
