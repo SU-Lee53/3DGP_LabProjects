@@ -1453,7 +1453,7 @@ void XMCollisionDetections()
 
 	// 5. Use of Bounding objects
 	{
-		// 0. Return values of collision detections.
+		// 5-0. Return values of collision detections.
 		{
 			// There are two types of collision detection functions : 1. ContainedBy() | 2. Intersects()
 
@@ -1486,7 +1486,7 @@ void XMCollisionDetections()
 			
 		}
 
-		// 1. Triangle Test
+		// 5-1. Triangle Test
 		{
 			// DirectXMath provides Triangle test functions that check intersection between triangle and bounding objects.
 			// We can use this in more precise collision detection algorithms.
@@ -1553,7 +1553,7 @@ void XMCollisionDetections()
 
 		std::println();
 
-		// 2. Check intersection between bounding objects
+		// 5-2. intersection Check between bounding objects
 		{
 			// Every bounding objects has ContainedBy(), Contains() and Intersects() functions.
 			// All of this functions are overloaded for every other types of bounding objects each.
@@ -1679,6 +1679,11 @@ void XMCollisionDetections()
 
 }
 
+void XMQuaternionFundamentals()
+{
+
+}
+
 int main()
 {
 	// Vector processing SIMD extension : SSE, SSE2, AVX, AVX2
@@ -1693,5 +1698,8 @@ int main()
 
 	// 3. Collision Detection
 	XMCollisionDetections();
+
+	// 4. Quaternions
+	XMQuaternionFundamentals()
 
 }
