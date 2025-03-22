@@ -37,16 +37,16 @@ public:
 	void SetRotation(float x, float y, float z);
 	
 	// Set player's look direction
-	void LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
+	void LookAt(const XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
 
 	// Move player
 	void Move(DWORD dwDirection, float fDistance);
-	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
+	void Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
 	void Move(float x, float y, float z);
 
 	// Rotate player
 	void Rotate(float fPitch, float fYaw, float fRoll);
-	void SetCameraOffset(XMFLOAT3& xmf3CameraOffset);
+	void SetCameraOffset(const XMFLOAT3& xmf3CameraOffset);
 
 	// Updates player's position and rotation info by time
 	void Update(float fTimeElapsed = 0.016f);
@@ -63,8 +63,8 @@ public:
 class CAirplanePlayer : public CPlayer
 {
 public:
-	CAirplanePlayer();
-	virtual ~CAirplanePlayer();
+	CAirplanePlayer() {}
+	virtual ~CAirplanePlayer() {}
 
 	virtual void OnUpdateTransform();
 };

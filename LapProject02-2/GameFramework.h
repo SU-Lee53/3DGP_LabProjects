@@ -1,6 +1,9 @@
 #pragma once
 #include "Player.h"
 #include "Scene.h"
+#include "Timer.h"
+
+class CGameTimer;
 
 class CGameFramework
 {
@@ -27,6 +30,15 @@ private:
 	// Scene class of gather GameObjects
 	CScene* m_pScene = NULL;
 
+	// Object for managing framerate
+	CGameTimer m_GameTimer = {};
+
+	// Last mouse clicked position
+	POINT m_ptOldCursorPos = {};
+
+	// TCHAR string for print framerate
+	_TCHAR m_pszFrameRate[50] = {};
+
 public:
 	// Create Framework (Called when main window created)
 	void OnCreate(HINSTANCE hInstance, HWND hMainHWnd);
@@ -48,5 +60,9 @@ public:
 	void AnimateObjects();
 	void FrameAdvance();
 
+	// Processing Window Message
+	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
+	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 };
 

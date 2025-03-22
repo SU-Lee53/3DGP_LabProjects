@@ -48,8 +48,8 @@ void CMesh::SetPolygon(int nIndex, CPolygon* pPolygon)
 
 void Draw2DLine(HDC hDCFrameBuffer, XMFLOAT3& f3PreviousProject, XMFLOAT3& f3currentProject)
 {
-	CPoint3D f3Previous = CGraphicsPipeline::ScreenTransform(f3PreviousProject);
-	CPoint3D f3Current = CGraphicsPipeline::ScreenTransform(f3currentProject);
+	XMFLOAT3 f3Previous = CGraphicsPipeline::ScreenTransform(f3PreviousProject);
+	XMFLOAT3 f3Current = CGraphicsPipeline::ScreenTransform(f3currentProject);
 
 	::MoveToEx(hDCFrameBuffer, (LONG)f3Previous.x, (LONG)f3Previous.y, NULL);
 	::LineTo(hDCFrameBuffer, (LONG)f3Current.x, (LONG)f3Current.y);
@@ -75,6 +75,7 @@ void CMesh::Render(HDC hDCFrameBuffer)
 
 		// Project the first vertex of polygon
 		f3PreviousProject = f3InitialProject = CGraphicsPipeline::Project(pVertices[0].m_xmf3Position);
+		bPreviousInside = bInitialInside = (-1.0f <= f3InitialProject.x) && (f3InitialProject.x <= 1.0f) && (-1.0f <= f3InitialProject.y) && (f3InitialProject.y <= 1.0f);
 
 		// Project every vertices and render with line
 		for (int i = 1; i < nVertices; i++)
@@ -88,7 +89,7 @@ void CMesh::Render(HDC hDCFrameBuffer)
 				(f3CurrentProject.y <= 1.0f);
 
 			// If projected vertex is in projection rect : Render (Prev, Current) in line
-			if (((f3PreviousProject.z >= 0.0f) || (f3CurrentProject.z >= 0.0f)) &&
+			if (((0.0f <= f3InitialProject.z) || (f3CurrentProject.z <= 1.0f)) &&
 				(bCurrentInside || bPreviousInside))
 			{
 				::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3CurrentProject);
@@ -190,7 +191,8 @@ CAirplaneMesh::CAirplaneMesh(float fWidth, float fHeight, float fDepth)
 	pFace->SetVertex(1, CVertex(-x1, -y1, -fz));
 	pFace->SetVertex(2, CVertex(-fx, -y3, -fz));
 	SetPolygon(i++, pFace);
-	//비행기 메쉬의 아래쪽 면
+
+	// Bottom face of plane mesh
 	pFace = new CPolygon(3);
 	pFace->SetVertex(0, CVertex(0.0f, +(fy + y3), +fz));
 	pFace->SetVertex(1, CVertex(0.0f, 0.0f, +fz));

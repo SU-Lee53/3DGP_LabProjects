@@ -65,18 +65,17 @@ public:
 
 	// Set look direction if 3rd persoon camera
 	// Normaliy, set to look player model
-	void SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
-	void SetLookAt(XMFLOAT3& xmf3Position, XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
+	void SetLookAt(const XMFLOAT3& xmf3LookAt, const XMFLOAT3& xmf3Up);
+	void SetLookAt(const XMFLOAT3& xmf3Position, const XMFLOAT3& xmf3LookAt, const XMFLOAT3& xmf3Up);
 
 	// Moves camera by xmf3Shift
-	void Move(XMFLOAT3& xmf3Shift);
-	void Move(float x, float y, float z);
+	void Move(const XMFLOAT3& xmf3Shift);
+	void Move(const float x, float y, float z);
 
 	// Rotates camera
 	void Rotate(float fPitch = 0.f, float fYaw = 0.f, float fRoll = 0.f);
 
 	// virtual function which is updates camera's position / rotation.
-	void Update(CPlayer* pPlayer, XMFLOAT3& xmf3LookAt, float fTimeElapsed = 0.016f);
-
+	void Update(CPlayer* pPlayer, const XMFLOAT3& xmf3LookAt, float fTimeElapsed = 0.016f);
 };
 

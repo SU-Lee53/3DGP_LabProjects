@@ -14,24 +14,24 @@ void CGameObject::SetPosition(float x, float y, float z)
 	m_xmf4x4World._43 = z;
 }
 
-void CGameObject::SetPosition(XMFLOAT3& xmf3Position)
+void CGameObject::SetPosition(const XMFLOAT3& xmf3Position)
 {
 	m_xmf4x4World._41 = xmf3Position.x;
 	m_xmf4x4World._42 = xmf3Position.y;
 	m_xmf4x4World._43 = xmf3Position.z;
 }
 
-void CGameObject::SetMovingDirection(XMFLOAT3& xmf3MovingDirection)
+void CGameObject::SetMovingDirection(const XMFLOAT3& xmf3MovingDirection)
 {
 	XMStoreFloat3(&m_xmf3MovingDirection, XMVector3Normalize(XMLoadFloat3(&xmf3MovingDirection)));
 }
 
-void CGameObject::SetRotationAxis(XMFLOAT3& xmf3RotationAxis)
+void CGameObject::SetRotationAxis(const XMFLOAT3& xmf3RotationAxis)
 {
 	XMStoreFloat3(&m_xmf3RotationAxis, XMVector3Normalize(XMLoadFloat3(&xmf3RotationAxis)));
 }
 
-void CGameObject::Move(XMFLOAT3& vDirection, float fSpeed)
+void CGameObject::Move(const XMFLOAT3& vDirection, float fSpeed)
 {
 	SetPosition(
 		m_xmf4x4World._41 + vDirection.x * fSpeed,
@@ -51,7 +51,7 @@ void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
 	XMStoreFloat4x4(&m_xmf4x4World, XMMatrixMultiply(xmmtxRotate, XMLoadFloat4x4(&m_xmf4x4World)));
 }
 
-void CGameObject::Rotate(XMFLOAT3& xmf3Axis, float fAngle)
+void CGameObject::Rotate(const XMFLOAT3& xmf3Axis, float fAngle)
 {
 	XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&xmf3Axis), XMConvertToRadians(fAngle));
 	XMStoreFloat4x4(&m_xmf4x4World, XMMatrixMultiply(xmmtxRotate, XMLoadFloat4x4(&m_xmf4x4World)));
@@ -63,7 +63,7 @@ void CGameObject::Animate(float fElapsedTime)
 	if (m_fMovingSpeed != 0.f) Move(m_xmf3MovingDirection, m_fMovingSpeed * fElapsedTime);
 }
 
-void CGameObject::Render(HDC hDCFrameBuffer)
+void CGameObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	if (m_pMesh)
 	{

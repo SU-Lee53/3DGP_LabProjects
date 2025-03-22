@@ -4,55 +4,72 @@
 
 void CScene::BuildObjects()
 {
-	CCubeMesh* pCubeMesh = new CCubeMesh(8.0f, 8.0f, 8.0f);
-
-	m_nObjects = 2;
-	m_ppObjects = new CGameObject*[m_nObjects];
-
-	m_ppObjects[0] = new CGameObject();
-	m_ppObjects[0]->SetMesh(pCubeMesh);
-	m_ppObjects[0]->SetPosition(-8.5f, 0.0f, -14.0f);
-	m_ppObjects[0]->SetRotation(0.0f, 0.0f, 0.0f);
-	m_ppObjects[0]->SetRotationSpeed(5.0f, 30.0f, 9.0f);
-	m_ppObjects[0]->SetColor(RGB(255, 0, 0));
+	CCubeMesh* pCubeMesh = new CCubeMesh(4.0f, 4.0f, 4.0f);
 	
-	m_ppObjects[1] = new CGameObject();
-	m_ppObjects[1]->SetMesh(pCubeMesh);
-	m_ppObjects[1]->SetPosition(+8.5f, 0.0f, -14.0f);
-	m_ppObjects[1]->SetRotation(0.0f, 0.0f, 0.0f);
-	m_ppObjects[1]->SetRotationSpeed(30.0f, 5.0f, 9.0f);
-	m_ppObjects[1]->SetColor(RGB(0, 0, 255));
+	m_pGameObjects.resize(5);
+
+	m_pGameObjects[0] = new CGameObject();
+	m_pGameObjects[0]->SetMesh(pCubeMesh);
+	m_pGameObjects[0]->SetColor(RGB(255, 0, 0));
+	m_pGameObjects[0]->SetPosition(-13.5f, 0.0f, 14.0f);
+	m_pGameObjects[0]->SetRotationAxis(XMFLOAT3{ 1.0f, 1.0f, 0.0f });
+	m_pGameObjects[0]->SetRotationSpeed(90.0f);
+	m_pGameObjects[0]->SetMovingDirection(XMFLOAT3{ 1.f, 0.f, 0.f });
+	m_pGameObjects[0]->SetMovingSpeed(0.5f);
+	
+	m_pGameObjects[1] = new CGameObject();
+	m_pGameObjects[1]->SetMesh(pCubeMesh);
+	m_pGameObjects[1]->SetColor(RGB(0, 0, 255));
+	m_pGameObjects[1]->SetPosition(13.5f, 0.0f, 14.0f);
+	m_pGameObjects[1]->SetRotationAxis(XMFLOAT3{ 0.0f, 1.0f, 1.0f });
+	m_pGameObjects[1]->SetRotationSpeed(180.0f);
+	m_pGameObjects[1]->SetMovingDirection(XMFLOAT3{ -1.f, 0.f, 0.f });
+	m_pGameObjects[1]->SetMovingSpeed(1.5f);
+	
+	m_pGameObjects[2] = new CGameObject();
+	m_pGameObjects[2]->SetMesh(pCubeMesh);
+	m_pGameObjects[2]->SetColor(RGB(0, 255, 0));
+	m_pGameObjects[2]->SetPosition(0.f, 5.0f, 20.0f);
+	m_pGameObjects[2]->SetRotationAxis(XMFLOAT3{ 1.0f, 0.0f, 1.0f });
+	m_pGameObjects[2]->SetRotationSpeed(30.15f);
+	m_pGameObjects[2]->SetMovingDirection(XMFLOAT3{ 1.f, -1.f, 0.f });
+	m_pGameObjects[2]->SetMovingSpeed(0.0f);
+	
+	m_pGameObjects[3] = new CGameObject();
+	m_pGameObjects[3]->SetMesh(pCubeMesh);
+	m_pGameObjects[3]->SetColor(RGB(0, 255, 255));
+	m_pGameObjects[3]->SetPosition(0.f, 0.0f, 40.0f);
+	m_pGameObjects[3]->SetRotationAxis(XMFLOAT3{ 0.0f, 0.0f, 1.0f });
+	m_pGameObjects[3]->SetRotationSpeed(40.6f);
+	m_pGameObjects[3]->SetMovingDirection(XMFLOAT3{ 0.f, 0.f, 1.f });
+	m_pGameObjects[3]->SetMovingSpeed(0.0f);
+	
+	m_pGameObjects[4] = new CGameObject();
+	m_pGameObjects[4]->SetMesh(pCubeMesh);
+	m_pGameObjects[4]->SetColor(RGB(128, 0, 255));
+	m_pGameObjects[4]->SetPosition(10.f, 10.0f, 50.0f);
+	m_pGameObjects[4]->SetRotationAxis(XMFLOAT3{ 0.0f, 1.0f, 1.0f });
+	m_pGameObjects[4]->SetRotationSpeed(50.06f);
+	m_pGameObjects[4]->SetMovingDirection(XMFLOAT3{ 0.f, 1.f, 1.f });
+	m_pGameObjects[4]->SetMovingSpeed(0.0f);
 }
 
 void CScene::ReleaseObjects()
 {
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		if (m_ppObjects[i]) delete m_ppObjects[i];
-	}
+	std::ranges::for_each(m_pGameObjects, [](CGameObject* p) { delete p; });
+	m_pGameObjects.clear();
 
-	if (m_ppObjects) delete[] m_ppObjects;
 }
 
 void CScene::Animate(float fElapsedTime)
 {
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		m_ppObjects[i]->Animate(fElapsedTime);
-	}
+	std::ranges::for_each(m_pGameObjects, [&fElapsedTime](CGameObject* p) { p->Animate(fElapsedTime); });
 }
 
 void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
-	// Set current camera to rendering pipeline
-	if (pCamera) CGraphicsPipeline::SetCamera(pCamera);
+	CGraphicsPipeline::SetViewport(&pCamera->m_Viewport);
+	CGraphicsPipeline::SetViewProjectTransform(&pCamera->m_xmf4x4ViewProject);
 
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		// set current GameObject to rendering pipeline
-		CGraphicsPipeline::SetGameObject(m_ppObjects[i]);
-
-		// Render current GameObject
-		m_ppObjects[i]->Render(hDCFrameBuffer);
-	}
+	std::ranges::for_each(m_pGameObjects, [&hDCFrameBuffer, pCamera](CGameObject* p) { p->Render(hDCFrameBuffer, pCamera); });
 }

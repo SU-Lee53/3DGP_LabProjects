@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.h"
+#include "Camera.h"
 
 class CGameObject
 {
@@ -38,19 +39,19 @@ public:
 	void SetColor(DWORD dwColor) { m_dwColor = dwColor; }
 
 	void SetPosition(float x, float y, float z);
-	void SetPosition(XMFLOAT3& xmf3Position);
+	void SetPosition(const XMFLOAT3& xmf3Position);
 	
-	void SetMovingDirection(XMFLOAT3& xmf3MovingDirection);
+	void SetMovingDirection(const XMFLOAT3& xmf3MovingDirection);
 	void SetMovingSpeed(float fSpeed) { m_fMovingSpeed = fSpeed; }
 	void SetMovingRange(float fRange) { m_fMovingRange = fRange; }
 
-	void SetRotationAxis(XMFLOAT3& xmf3RotationAxis);
+	void SetRotationAxis(const XMFLOAT3& xmf3RotationAxis);
 	void SetRotationSpeed(float fSpeed) { m_fRotationSpeed = fSpeed; }
 
-	void Move(XMFLOAT3& vDirection, float fSpeed);
+	void Move(const XMFLOAT3& vDirection, float fSpeed);
 
 	void Rotate(float fPitch, float fYaw, float fRoll);
-	void Rotate(XMFLOAT3& xmf3Axis, float fAngle);
+	void Rotate(const XMFLOAT3& xmf3Axis, float fAngle);
 
 	virtual void OnUpdateTransfrom() {}
 
@@ -58,7 +59,7 @@ public:
 	virtual void Animate(float fElapsedTime);
 	
 	// Render GameObject
-	virtual void Render(HDC hDCFrameBuffer);
+	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 
 
 

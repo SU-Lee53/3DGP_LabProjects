@@ -50,7 +50,7 @@ void CCamera::GenerateViewMatrix()
 	XMStoreFloat4x4(&m_xmf4x4ViewProject, XMMatrixMultiply(XMLoadFloat4x4(&m_xmf4x4View), XMLoadFloat4x4(&m_xmf4x4Project)));
 }
 
-void CCamera::SetLookAt(XMFLOAT3& xmf3Position, XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
+void CCamera::SetLookAt(const XMFLOAT3& xmf3Position, const XMFLOAT3& xmf3LookAt, const XMFLOAT3& xmf3Up)
 {
 	m_xmf3Position = xmf3Position;
 	XMStoreFloat4x4(&m_xmf4x4View, XMMatrixLookAtLH(XMLoadFloat3(&m_xmf3Position), XMLoadFloat3(&xmf3LookAt), XMLoadFloat3(&xmf3Up)));
@@ -64,7 +64,7 @@ void CCamera::SetLookAt(XMFLOAT3& xmf3Position, XMFLOAT3& xmf3LookAt, XMFLOAT3& 
 	XMStoreFloat3(&m_xmf3Look, XMVector3Normalize(xmf32vLook));
 }
 
-void CCamera::SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
+void CCamera::SetLookAt(const XMFLOAT3& xmf3LookAt, const XMFLOAT3& xmf3Up)
 {
 	// Creates view matrix from current camera position.
 	SetLookAt(m_xmf3Position, xmf3LookAt, xmf3Up);
@@ -85,10 +85,10 @@ void CCamera::SetViewport(int nLeft, int nTop, int nWidth, int nHeight)
 void CCamera::SetFOVAngle(float fFOVAngle)
 {
 	m_fFOVAngle = fFOVAngle;
-	m_fProjectRectDistance = float(1.f / tan(XMConvertToDegrees(fFOVAngle * 0.5f)));
+	m_fProjectRectDistance = float(1.f / tan(XMConvertToRadians(fFOVAngle * 0.5f)));
 }
 
-void CCamera::Move(XMFLOAT3& xmf3Shift)
+void CCamera::Move(const XMFLOAT3& xmf3Shift)
 {
 	XMStoreFloat3(&m_xmf3Position, XMVectorAdd(XMLoadFloat3(&m_xmf3Position), XMLoadFloat3(&xmf3Shift)));
 }
@@ -123,13 +123,13 @@ void CCamera::Rotate(float fPitch, float fYaw, float fRoll)
 
 // Camera will follow player slowly.
 // Delayed follow? idk how to say in easy word.
-void CCamera::Update(CPlayer* pPlayer, XMFLOAT3& xmf3LookAt, float fTimeElapsed)
+void CCamera::Update(CPlayer* pPlayer, const XMFLOAT3& xmf3LookAt, float fTimeElapsed)
 {
 	XMMATRIX xmmtx4Rotate;
 	xmmtx4Rotate.r[0] = XMVectorSet(pPlayer->m_xmf3Right.x, pPlayer->m_xmf3Right.y, pPlayer->m_xmf3Right.z, 0.0f);
 	xmmtx4Rotate.r[1] = XMVectorSet(pPlayer->m_xmf3Up.x, pPlayer->m_xmf3Up.y, pPlayer->m_xmf3Up.z, 0.0f);
 	xmmtx4Rotate.r[2] = XMVectorSet(pPlayer->m_xmf3Look.x, pPlayer->m_xmf3Look.y, pPlayer->m_xmf3Look.z, 0.0f);
-	xmmtx4Rotate.r[3] = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f);
+	xmmtx4Rotate.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 
 	XMVECTOR xmvPosition = XMLoadFloat3(&m_xmf3Position);
 
@@ -156,7 +156,5 @@ void CCamera::Update(CPlayer* pPlayer, XMFLOAT3& xmf3LookAt, float fTimeElapsed)
 		// if rotation angle value is small, rotation movement is almost same as linear movement.
 		XMStoreFloat3(&m_xmf3Position, XMVectorAdd(xmvPosition, XMVectorScale(xmvDirection, fDistance)));
 		SetLookAt(pPlayer->m_xmf3Position, pPlayer->m_xmf3Up);
-
-
 	}
 }

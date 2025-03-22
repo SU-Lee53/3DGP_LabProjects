@@ -24,6 +24,10 @@
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 
+#include <vector>
+#include <algorithm>
+#include <ranges>
+
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 

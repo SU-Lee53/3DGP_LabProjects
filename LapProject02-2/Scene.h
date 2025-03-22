@@ -5,13 +5,15 @@
 class CScene
 {
 public:
-	CScene() {}
+	CScene(CPlayer* pPlayer) { m_pPlayer = pPlayer; }
 	virtual ~CScene() {}
 
 private:
 	// Numbers of GameObjects and array of GameObjects
-	int m_nObjects				= 0;
-	CGameObject** m_ppObjects	= NULL;
+	// Changed to std::vector
+	std::vector<CGameObject*> m_pGameObjects = {};
+
+	CPlayer* m_pPlayer = NULL;
 
 public:
 	// Create and Destroy GameObjects
@@ -23,5 +25,9 @@ public:
 
 	// Render GameObjects
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
+
+	// Processing Window Message
+	virtual void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam) {}
+	virtual void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam) {}
 };
 
