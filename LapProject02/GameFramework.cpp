@@ -35,7 +35,6 @@ CGameFramework::CGameFramework()
 
 CGameFramework::~CGameFramework()
 {
-	OnDestroy();
 }
 
 bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd, bool bEnableDebugLayer, bool bEnableGBV)
@@ -48,11 +47,11 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd, bool bEnableDe
 	CreateCommandQueueAndList();
 	CreateSwapChain();
 	CreateRTVAndDSVDescriptorHeaps();
-	//CreateRenderTargetViews();
-	//CreateDepthStencilView();
+	CreateRenderTargetViews();
+	CreateDepthStencilView();
 	
 	// Create renderable GameObjects
-	//BuildObjects();
+	BuildObjects();
 
 	return true;
 }
@@ -60,10 +59,10 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd, bool bEnableDe
 void CGameFramework::OnDestroy()
 {
 	// Wait for GPU executes all remain commands.
-	//WaitForGPUComplete();
+	WaitForGPUComplete();
 
 	// Destroy GameObjects
-	//ReleaseObjects();
+	ReleaseObjects();
 
 	// Close fence event
 	::CloseHandle(m_hFenceEvent);
@@ -219,7 +218,7 @@ void CGameFramework::CreateSwapChain()
 {
 	RECT rcClient{};
 	::GetClientRect(m_hWnd, &rcClient);
-	m_nWndClientWidth = rcClient.right - rcClient.bottom;
+	m_nWndClientWidth = rcClient.right - rcClient.left;
 	m_nWndClientHeight = rcClient.bottom - rcClient.top;
 
 	DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc{};
@@ -379,4 +378,218 @@ void CGameFramework::CreateDepthStencilView()
 	m_pd3dDevice->CreateDepthStencilView(m_pd3dDepthStencilBuffer, NULL, d3dDSVCPUDescriptorHandle);
 }
 
-// TODO : from - p14. (8) Define BuildObjects()...
+void CGameFramework::BuildObjects()
+{
+
+}
+
+void CGameFramework::ReleaseObjects()
+{
+
+}
+
+void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+{
+	switch (nMessageID) {
+	
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+		break;
+
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+		break;
+
+	case WM_MOUSEMOVE:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+{
+	switch (nMessageID) {
+		
+	case WM_KEYUP:
+		switch (wParam) {
+
+		case VK_ESCAPE:
+			::PostQuitMessage(0);
+			break;
+
+		case VK_RETURN:
+			break;
+
+		case VK_F8:
+			break;
+
+		case VK_F9:
+			break;
+
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+{
+	switch (nMessageID) {
+
+	case WM_SIZE:
+	{
+		m_nWndClientHeight = LOWORD(lParam);
+		m_nWndClientHeight = HIWORD(lParam);
+		break;
+	}
+
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MOUSEMOVE:
+		OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
+		break;
+
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+		OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+void CGameFramework::ProcessInput()
+{
+
+}
+
+void CGameFramework::AnimateObjects()
+{
+
+}
+
+void CGameFramework::FrameAdvance()
+{
+	ProcessInput();
+	AnimateObjects();
+
+	RenderBegin();
+
+	// Rendering code here
+
+	RenderEnd();
+
+	Present();
+
+}
+
+void CGameFramework::RenderBegin()
+{
+	HRESULT hr;
+	
+	// Reset Command Allocator & Command List
+	hr = m_pd3dCommandAllocator->Reset();
+	hr = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
+	if (FAILED(hr)) __debugbreak();
+
+	// Change presented render target's resource state from D3D12_RESOURCE_STATE_PRESENT to D3D12_RESOURCE_STATE_RENDER_TARGET 
+	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
+	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
+	{
+		d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		d3dResourceBarrier.Transition.pResource = m_ppd3dRenderTargetBuffers[m_nSwapChainBufferIndex];
+		d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	}
+	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
+
+	// Set Viewport & Scissor Rect
+	m_pd3dCommandList->RSSetViewports(1, &m_d3dViewport);
+	m_pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
+
+	// Compute CPU descriptor handle(address) of current render target
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dRTVCPUDescriptorHandle = m_pd3dRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	d3dRTVCPUDescriptorHandle.ptr += (m_nSwapChainBufferIndex * m_nRTVDescriptorIncrementSize);
+
+	// Clear render target as desired color
+	float pfClearColor[4] = { 0.f, 0.125f, 0.3f, 1.0f };
+	m_pd3dCommandList->ClearRenderTargetView(d3dRTVCPUDescriptorHandle, pfClearColor, 0, NULL);
+
+	// Compute CPU Descriptor Handle(address) of DSV
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dDSVDescriptorHandle = m_pd3dDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	
+	// Clear DSV as desired value
+	m_pd3dCommandList->ClearDepthStencilView(d3dDSVDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, NULL);
+
+	// Link RTV and DSV descriptor handle to Output Merger(OM)
+	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRTVCPUDescriptorHandle, TRUE, &d3dDSVDescriptorHandle);
+
+}
+
+void CGameFramework::RenderEnd()
+{
+	HRESULT hr;
+
+	// Change rendered render target's resource state from D3D12_RESOURCE_STATE_RENDER_TARGET to D3D12_RESOURCE_STATE_PRESENT
+	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
+	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
+	{
+		d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		d3dResourceBarrier.Transition.pResource = m_ppd3dRenderTargetBuffers[m_nSwapChainBufferIndex];
+		d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	}
+	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
+
+	hr = m_pd3dCommandList->Close();
+
+	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList };
+	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
+
+	WaitForGPUComplete();
+}
+
+void CGameFramework::Present()
+{
+	// Present SwapChain
+	// This will filp back buffer to front buffer and change render target index
+	DXGI_PRESENT_PARAMETERS dxgiPresentParameters;
+	dxgiPresentParameters.DirtyRectsCount = 0;
+	dxgiPresentParameters.pDirtyRects = NULL;
+	dxgiPresentParameters.pScrollRect = NULL;
+	dxgiPresentParameters.pScrollOffset = NULL;
+	m_pdxgiSwapChain->Present1(1, 0, &dxgiPresentParameters);
+
+	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
+
+}
+
+void CGameFramework::WaitForGPUComplete()
+{
+	// Increase CPU Fence value
+	m_nFenceValue++;
+
+	const UINT64 nFence = m_nFenceValue;
+	HRESULT hResult = m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
+	if (m_pd3dFence->GetCompletedValue() < nFence)
+	{
+		hResult = m_pd3dFence->SetEventOnCompletion(nFence, m_hFenceEvent);
+		::WaitForSingleObject(m_hFenceEvent, INFINITE);
+	}
+}
+
+

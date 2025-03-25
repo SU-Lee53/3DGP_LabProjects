@@ -33,6 +33,11 @@ public:
 	void FrameAdvance();
 
 private:
+	void RenderBegin();
+	void RenderEnd();
+	void Present();
+
+private:
 	// GPU-CPU Sync
 	void WaitForGPUComplete();
 
