@@ -13,7 +13,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
-
+#pragma comment(lib, "winmm.lib")
 
 // Direct3D related headers
 #include <string>	

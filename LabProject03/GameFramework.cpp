@@ -31,6 +31,8 @@ CGameFramework::CGameFramework()
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
+	::_tcscpy_s(m_pszFrameRate, _T("LapProject ("));
+
 }
 
 CGameFramework::~CGameFramework()
@@ -480,6 +482,8 @@ void CGameFramework::AnimateObjects()
 
 void CGameFramework::FrameAdvance()
 {
+	m_GameTimer.Tick(0.0f);
+
 	ProcessInput();
 	AnimateObjects();
 
@@ -491,6 +495,8 @@ void CGameFramework::FrameAdvance()
 
 	Present();
 
+	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
+	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
 void CGameFramework::RenderBegin()
