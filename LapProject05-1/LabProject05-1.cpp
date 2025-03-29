@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "LabProject05.h"
+#include "LabProject05-1.h"
 
 #include "GameFramework.h"
 
@@ -37,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_LABPROJECT05, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_LABPROJECT051, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // 애플리케이션 초기화를 수행합니다:
@@ -46,7 +46,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_LABPROJECT05));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_LABPROJECT051));
     
     MSG msg;
 
@@ -95,10 +95,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDC_LABPROJECT05));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDC_LABPROJECT051));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = NULL;
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_LABPROJECT051);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -148,6 +148,59 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+
+void HandleMenu(WORD param)
+{
+    switch (param)
+    {
+    case ID_DEMO_0:
+        g_GameFramework.SetDemoShader(0);
+        break;
+    case ID_DEMO_1:
+        g_GameFramework.SetDemoShader(1);
+        break;
+    case ID_DEMO_2:
+        g_GameFramework.SetDemoShader(2);
+        break;
+    case ID_DEMO_3:
+        g_GameFramework.SetDemoShader(3);
+        break;
+    case ID_DEMO_4:
+        g_GameFramework.SetDemoShader(4);
+        break;
+    case ID_DEMO_5:
+        g_GameFramework.SetDemoShader(5);
+        break;
+    case ID_DEMO_6:
+        g_GameFramework.SetDemoShader(6);
+        break;
+    case ID_DEMO_7:
+        g_GameFramework.SetDemoShader(7);
+        break;
+    case ID_DEMO_8:
+        g_GameFramework.SetDemoShader(8);
+        break;
+    case ID_DEMO_9:
+        g_GameFramework.SetDemoShader(9);
+        break;
+    case ID_DEMO_10:
+        g_GameFramework.SetDemoShader(10);
+        break;
+    case ID_DEMO_11:
+        g_GameFramework.SetDemoShader(11);
+        break;
+    case ID_DEMO_12:
+        g_GameFramework.SetDemoShader(12);
+        break;
+    case ID_DEMO_13:
+        g_GameFramework.SetDemoShader(13);
+        break;
+    case ID_DEMO_14:
+        g_GameFramework.SetDemoShader(14);
+        break;
+    }
+}
+
 //
 //  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -176,28 +229,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         ::PostQuitMessage(0);
         break;
+
+    case WM_COMMAND:
+        HandleMenu(LOWORD(wParam));
     default:
         return ::DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
-}
-
-// 정보 대화 상자의 메시지 처리기입니다.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
 }
