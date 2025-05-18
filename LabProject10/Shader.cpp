@@ -77,7 +77,7 @@ D3D12_DEPTH_STENCIL_DESC CShader::CreateDepthStencilState()
 	D3D12_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
 	::ZeroMemory(&d3dDepthStencilDesc, sizeof(D3D12_DEPTH_STENCIL_DESC));
 	{
-		d3dDepthStencilDesc.DepthEnable = FALSE;
+		d3dDepthStencilDesc.DepthEnable = TRUE;
 		d3dDepthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 		d3dDepthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 		d3dDepthStencilDesc.StencilEnable = FALSE;
@@ -307,23 +307,9 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 	float fzPitch = 12.0f * 2.5f;
 
 	CRotatingObject* pRotatingObject = NULL;
-	//	for (int x = -xObjects; x <= xObjects; x++) {
-	//		for (int y = -yObjects; y <= yObjects; y++) {
-	//			for (int z = -zObjects; z <= zObjects; z++) {
-	//				pRotatingObject = new CRotatingObject();
-	//				pRotatingObject->SetMesh(pCubeMesh);
-	//				pRotatingObject->SetPosition(fxPitch * x, fyPitch * y, fzPitch * z);
-	//				pRotatingObject->SetRotationAxis(XMFLOAT3(0.f, 1.f, 0.f));
-	//				pRotatingObject->SetRotationSpeed(10.0f * (i % 10) + 3.0f);
-	//				m_ppObjects[i++] = pRotatingObject;
-	//			}
-	//		}
-	//	}
-	
-	// When depth test is disabled, Rendring order must be back-to-front
-	for (int i = 0, z = +zObjects; z >= -zObjects; z--) {
-		for (int x = -xObjects; x <= xObjects; x++) {
-			for (int y = -yObjects; y <= yObjects; y++) {
+	for (int x = -xObjects; x <= xObjects; x++) {
+		for (int y = -yObjects; y <= yObjects; y++) {
+			for (int z = -zObjects; z <= zObjects; z++) {
 				pRotatingObject = new CRotatingObject();
 				pRotatingObject->SetMesh(pCubeMesh);
 				pRotatingObject->SetPosition(fxPitch * x, fyPitch * y, fzPitch * z);
