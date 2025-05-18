@@ -9,6 +9,7 @@ std::pair<std::string, std::string> GetInput(std::string_view svSlnPath);
 bool CreateDestDirectory(std::string_view svDestPath);
 bool CopySrcToDest(std::string_view svSrcPath, std::string_view svDestPath);
 bool ModifyCopiedFiles(std::string_view svSrcPath, std::string_view svDestPath);
+bool ModifyRCFile(std::string_view svSrcPath, std::string_view svDestPath);
 
 bool ChangeCopiedFilename(std::string_view svSrcPath, std::string_view svDestPath);
 bool ModifyVCXPROJFile(std::string_view svSrcPath, std::string_view& svDestPath);
@@ -115,7 +116,24 @@ bool ModifyCopiedFiles(std::string_view svSrcPath, std::string_view svDestPath)
 	// 2. Modify vcxproj;
 	bResult = ModifyVCXPROJFile(svSrcPath, svDestPath);
 
+	// 3. Modify resource.rc
+	bResult = ModifyRCFile(svSrcPath, svDestPath);
 	return bResult;
+}
+
+bool ModifyRCFile(std::string_view svSrcPath, std::string_view svDestPath)
+{
+	std::filesystem::path src{ svSrcPath };
+	std::filesystem::path dest{ svDestPath };
+
+	std::string SrcProjectName = src.stem().string();
+	std::string DestProjectName = dest.stem().string();
+
+	std::filesystem::path rcPath = dest / std::filesystem::path{ DestProjectName + ".rc" };
+
+
+
+	return false;
 }
 
 bool ChangeCopiedFilename(std::string_view svSrcPath, std::string_view svDestPath)

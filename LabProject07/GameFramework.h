@@ -1,9 +1,9 @@
 #pragma once
 #include "Timer.h"
 #include "Scene.h"
+#include "Camera.h"
 
-class CGameFramework
-{
+class CGameFramework {
 public:
 	CGameFramework();
 	~CGameFramework();
@@ -118,9 +118,14 @@ private:
 	UINT64			m_nFenceValues[m_nSwapChainBuffers] = {};
 	HANDLE			m_hFenceEvent = nullptr;
 
-	// Viewport & Scissor rect 
-	D3D12_VIEWPORT	m_d3dViewport = {};
-	D3D12_RECT		m_d3dScissorRect = {};
+	// Removed from in LabProject07
+	//	// Viewport & Scissor rect 
+	//	D3D12_VIEWPORT	m_d3dViewport = {};
+	//	D3D12_RECT		m_d3dScissorRect = {};
+
+public:
+	// Added in LabProject05
+	CCamera* m_pCamera = nullptr;
 
 private:
 	// Added in LabProject03

@@ -58,10 +58,6 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd, bool bEnableDe
 	RECT r;
 	::GetClientRect(m_hWnd, &r);
 
-	m_d3dViewport = { 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f };
-	m_d3dScissorRect = { 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT };
-
-
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
@@ -213,16 +209,6 @@ void CGameFramework::CreateD3DDevice(bool bEnableDebugLayer, bool bEnableGBV)
 	if (FAILED(m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pd3dFence)))) __debugbreak();
 
 	m_hFenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
-
-	// Set viewport, scissor rect
-	m_d3dViewport.TopLeftX = 0;
-	m_d3dViewport.TopLeftY = 0;
-	m_d3dViewport.Width = static_cast<float>(m_nWndClientWidth);
-	m_d3dViewport.Height = static_cast<float>(m_nWndClientHeight);
-	m_d3dViewport.MinDepth = 0.f;
-	m_d3dViewport.MaxDepth = 1.f;
-
-	m_d3dScissorRect = { 0,0,m_nWndClientWidth, m_nWndClientHeight };
 }
 
 void CGameFramework::CreateSwapChain()
@@ -388,6 +374,13 @@ void CGameFramework::CreateDepthStencilView()
 void CGameFramework::BuildObjects()
 {
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
+
+	// 따라하기8: Create Camera instance and set viewport, scissor rect, view/proj matrix
+	m_pCamera = new CCamera();
+	m_pCamera->SetViewport(0, 0, m_nWndClientWidth, m_nWndClientHeight, 0.f, 1.f);
+	m_pCamera->SetScissorRect(0, 0, m_nWndClientWidth, m_nWndClientHeight);
+	m_pCamera->GenerateProjectionMatrix(1.0f, 500.0f, float(m_nWndClientWidth) / float(m_nWndClientWidth), 90.0f);
+	m_pCamera->GenerateViewMatrix(XMFLOAT3(0.f, 0.f, -2.0f), XMFLOAT3(0.f, 0.f, 0.f), XMFLOAT3(0.f, 1.f, 0.f));
 
 	// Create Scene object and contained GameObjects
 	m_pScene = new CScene();
@@ -595,9 +588,9 @@ void CGameFramework::RenderBegin()
 	}
 	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
 
-	// Set Viewport & Scissor Rect
-	m_pd3dCommandList->RSSetViewports(1, &m_d3dViewport);
-	m_pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
+	// Set Viewport & Scissor Rect -> Removed in LabProject07
+	//	m_pd3dCommandList->RSSetViewports(1, &m_d3dViewport);
+	//	m_pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
 
 	// Compute CPU descriptor handle(address) of current render target
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRTVCPUDescriptorHandle = m_pd3dRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -619,7 +612,7 @@ void CGameFramework::RenderBegin()
 
 void CGameFramework::Render()
 {
-	if (m_pScene) m_pScene->Render(m_pd3dCommandList);
+	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
 }
 
 void CGameFramework::RenderEnd()
