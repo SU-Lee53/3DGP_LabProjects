@@ -123,17 +123,7 @@ bool ModifyCopiedFiles(std::string_view svSrcPath, std::string_view svDestPath)
 
 bool ModifyRCFile(std::string_view svSrcPath, std::string_view svDestPath)
 {
-	std::filesystem::path src{ svSrcPath };
-	std::filesystem::path dest{ svDestPath };
-
-	std::string SrcProjectName = src.stem().string();
-	std::string DestProjectName = dest.stem().string();
-
-	std::filesystem::path rcPath = dest / std::filesystem::path{ DestProjectName + ".rc" };
-
-
-
-	return false;
+	return true;
 }
 
 bool ChangeCopiedFilename(std::string_view svSrcPath, std::string_view svDestPath)
