@@ -10,29 +10,31 @@ cbuffer cbCameraInfo : register(b1)
     matrix gmtxProjection : packoffset(c4);
 }
 
-struct VS_INPUT
+struct VS_INSTANCING_INPUT
 {
     float3 position : POSITION;
     float4 color : COLOR;
+    float4x4 mtxTransform : WORLDMATRIX;    // ½Ã¸àÆ½ ÀÎµ¦½º´Â ¾Ë¾Æ¼­ ¸ÅÇÎ?
+    float4 instanceColor : INSTANCECOLOR;
 };
 
-struct VS_OUTPUT
+struct VS_INSTANCING_OUTPUT
 {
     float4 position : SV_POSITION;
     float4 color : COLOR;
 };
 
-VS_OUTPUT VSDiffused(VS_INPUT input)
+VS_INSTANCING_OUTPUT VSInstancing(VS_INSTANCING_INPUT input)
 {
-    VS_OUTPUT output;
+    VS_INSTANCING_OUTPUT output;
     
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxWorld), gmtxView), gmtxProjection);
-    output.color = input.color;
+    output.position = mul(mul(mul(float4(input.position, 1.0f), input.mtxTransform), gmtxView), gmtxProjection);
+    output.color = input.color + input.instanceColor;
     
     return output;
 }
 
-float4 PSDiffused(VS_OUTPUT input) : SV_TARGET
+float4 PSInstancing(VS_INSTANCING_OUTPUT input) : SV_TARGET
 {
     return input.color;
 }
