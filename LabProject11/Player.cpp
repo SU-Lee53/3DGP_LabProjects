@@ -4,20 +4,22 @@
 
 CPlayer::CPlayer()
 {
-	m_xmf3Position = XMFLOAT3(0.f, 0.f, 0.f);
-	m_xmf3Right = XMFLOAT3(1.f, 0.f, 0.f);
-	m_xmf3Up = XMFLOAT3(0.f, 1.f, 0.f);
-	m_xmf3Look = XMFLOAT3(0.f, 0.f, 1.f);
+	m_pCamera = NULL;
 
-	m_fPitch = 0.f;
-	m_fYaw = 0.f;
-	m_fRoll = 0.f;
+	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
-	m_xmf3Velocity = XMFLOAT3(0.f, 0.f, 0.f);
-	m_xmf3Gravity = XMFLOAT3(0.f, 0.f, 0.f);
-	m_fMaxVelocityXZ = 0.f;
-	m_fMaxVelocityY = 0.f;
-	m_fFriction = 0.f;
+	m_xmf3Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_xmf3Gravity = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_fMaxVelocityXZ = 0.0f;
+	m_fMaxVelocityY = 0.0f;
+	m_fFriction = 0.0f;
+
+	m_fPitch = 0.0f;
+	m_fRoll = 0.0f;
+	m_fYaw = 0.0f;
 
 	m_pPlayerUpdatedContext = NULL;
 	m_pCameraUpdatedContext = NULL;
@@ -45,7 +47,7 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bVelocity)
 		xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, fDistance);
 	}
 	
-	if (dwDirection & DIR_FORWARD) {
+	if (dwDirection & DIR_LEFT) {
 		xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, -fDistance);
 	}
 	
@@ -53,7 +55,7 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bVelocity)
 		xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, fDistance);
 	}
 	
-	if (dwDirection & DIR_FORWARD) {
+	if (dwDirection & DIR_DOWN) {
 		xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, -fDistance);
 	}
 
@@ -93,7 +95,7 @@ void CPlayer::Rotate(float x, float y, float z)
 			}
 			if (m_fPitch < -89.0f) {
 				x -= (m_fPitch + 89.0f);
-				m_fPitch =-+89.0f;
+				m_fPitch = -89.0f;
 			}
 		}
 
@@ -109,12 +111,12 @@ void CPlayer::Rotate(float x, float y, float z)
 		
 		// limits z-rotation to -20 ~ +20
 		if (z != 0.0f) {
-			m_fYaw += y;
-			if (m_fYaw > +20.f) {
+			m_fRoll += z;
+			if (m_fRoll > +20.f) {
 				z -= (m_fRoll - 20.f);
 				m_fRoll = +20.f;
 			}
-			if (m_fYaw < -20.f) {
+			if (m_fRoll < -20.f) {
 				z -= (m_fRoll + 20.f);
 				m_fRoll = -20.f;
 			}
@@ -132,6 +134,9 @@ void CPlayer::Rotate(float x, float y, float z)
 	}
 	else if (nCameraMode == SPACESHIP_CAMERA) {
 		// In SPACESHIP_CAMERA : There are no limit on rotation angle
+
+		m_pCamera->Rotate(x, y, z);
+
 		if (x != 0.f) {
 			XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Right), XMConvertToRadians(x));
 			m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, xmmtxRotate);
@@ -323,6 +328,7 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommand
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
 	SetPosition(XMFLOAT3(0.f, 0.f, -50.f));
+	m_pCamera->GenerateViewMatrix(m_xmf3Position, m_xmf3Look, m_xmf3Up);
 
 	CPlayerShader* pShader = new CPlayerShader();
 	pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);

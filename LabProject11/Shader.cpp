@@ -292,9 +292,9 @@ void CObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 	CCubeMeshDiffused* pCubeMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList, 12.0f, 12.0f, 12.0f);
 
 	// Compare framerate when modify values below
-	int xObjects = 10;
-	int yObjects = 10;
-	int zObjects = 10;
+	int xObjects = 1;
+	int yObjects = 1;
+	int zObjects = 1;
 	int i = 0;
 
 	// 21 cube per each x,y,z axis -> 21 * 21 * 21 = 9261

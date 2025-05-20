@@ -551,12 +551,18 @@ void CGameFramework::ProcessInput()
 	DWORD dwDirection = 0;
 
 	if (::GetKeyboardState(pKeyBuffer)) {
-		if (pKeyBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeyBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		if (pKeyBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		if (pKeyBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeyBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		if (pKeyBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+		if (pKeyBuffer[VK_UP] & 0xF0) 
+			dwDirection |= DIR_FORWARD;
+		if (pKeyBuffer[VK_DOWN] & 0xF0) 
+			dwDirection |= DIR_BACKWARD;
+		if (pKeyBuffer[VK_LEFT] & 0xF0) 
+			dwDirection |= DIR_LEFT;
+		if (pKeyBuffer[VK_RIGHT] & 0xF0) 
+			dwDirection |= DIR_RIGHT;
+		if (pKeyBuffer[VK_PRIOR] & 0xF0) 
+			dwDirection |= DIR_UP;
+		if (pKeyBuffer[VK_NEXT] & 0xF0) 
+			dwDirection |= DIR_DOWN;
 	}
 
 	float cxDelta = 0.f;
@@ -584,7 +590,8 @@ void CGameFramework::ProcessInput()
 		// Moves player dwDirection direction (IRL: Update Velocity vector)
 		// Assume that moving speed is 50/sec
 		if (dwDirection) {
-			m_pPlayer->Move(dwDirection, 50.f * m_GameTimer.GetTimeElapsed(), true);
+			float fDeltaTime = m_GameTimer.GetTimeElapsed();
+			m_pPlayer->Move(dwDirection, 5000.f * fDeltaTime, true);
 		}
 	}
 

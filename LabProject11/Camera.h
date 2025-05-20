@@ -34,7 +34,7 @@ protected:
 
 	XMFLOAT3		m_xmf3LookAtWorld = {}; // LookAt-pos for 3rd person camera
 	XMFLOAT3		m_xmf3Offset = {};		// Camera offset for 3rd person camera(mostly)
-	float			m_fTimeLag = 0.f;		// Time Delay when camera rotated
+	float			m_fTimeLag = 0.5f;		// Time Delay when camera rotated
 
 	XMFLOAT4X4		m_xmf4x4View = {};
 	XMFLOAT4X4		m_xmf4x4Projection = {};
@@ -148,6 +148,6 @@ public:
 	CThirdPersonCamera(CCamera* pCamera);
 	virtual ~CThirdPersonCamera() {}
 
-	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed);
-	virtual void SetLookAt(XMFLOAT3& xmf3LookAt);
+	virtual void Update(const XMFLOAT3& xmf3LookAt, float fTimeElapsed) override;
+	virtual void SetLookAt(const XMFLOAT3& xmf3LookAt);
 };
